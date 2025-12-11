@@ -99,9 +99,11 @@ const Navbar = () => {
             : "top-0 left-0 right-0 w-full",
           isMobile && isOpen && "top-0 left-0 right-0 w-full rounded-none",
           // Background styles
-          isScrolled || !isHomePage || isOpen
+          isScrolled || isOpen
             ? "bg-white/95 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.08)]"
-            : "bg-transparent",
+            : isHomePage
+              ? "bg-transparent"
+              : "bg-white/95 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.08)]",
           // Padding - increased to accommodate larger logo
           isScrolled ? "py-4 md:py-6" : "py-6 md:py-10",
           "overflow-visible",
@@ -123,9 +125,9 @@ const Navbar = () => {
                     "relative text-[15px] font-medium tracking-[0.5px] transition-colors duration-300",
                     "after:absolute after:bottom-[-4px] after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#A1BC98] after:transition-all after:duration-300",
                     "hover:after:w-full",
-                    isScrolled || !isHomePage
-                      ? "text-[#778873] hover:text-[#2d3a29]"
-                      : "text-white/90 hover:text-white drop-shadow-sm",
+                    isHomePage && !isScrolled
+                      ? "text-white/90 hover:text-white drop-shadow-sm"
+                      : "text-[#778873] hover:text-[#2d3a29]",
                     isActiveLink(link.href) && "after:w-full text-[#A1BC98]",
                   )}
                 >
@@ -136,24 +138,26 @@ const Navbar = () => {
 
             {/* Center Logo */}
             <Link to="/" className="absolute left-1/2 -translate-x-1/2 group flex items-center justify-center">
-              {/* Text Logo - visible at top */}
               <span
                 className={cn(
                   "text-[28px] absolute whitespace-nowrap transition-all duration-500",
-                  isScrolled || !isHomePage ? "opacity-0 scale-90" : "opacity-100 scale-100 text-white drop-shadow-md",
+                  isScrolled
+                    ? "opacity-0 scale-90"
+                    : isHomePage
+                      ? "opacity-100 scale-100 text-white drop-shadow-md"
+                      : "opacity-100 scale-100 text-[#778873]",
                   "group-hover:scale-105",
                 )}
                 style={{ fontFamily: "'Knewave', cursive" }}
               >
                 Stay<span className="text-[#A1BC98]">in</span>UBUD
               </span>
-              {/* Image Logo - visible on scroll */}
               <img
                 src={logoImage || "/placeholder.svg"}
                 alt="StayinUBUD"
                 className={cn(
                   "transition-all duration-500 h-32",
-                  isScrolled || !isHomePage ? "opacity-100 scale-100" : "opacity-0 scale-90",
+                  isScrolled ? "opacity-100 scale-100" : "opacity-0 scale-90",
                   "group-hover:scale-105",
                 )}
               />
@@ -169,9 +173,9 @@ const Navbar = () => {
                     "relative text-[15px] font-medium tracking-[0.5px] transition-colors duration-300",
                     "after:absolute after:bottom-[-4px] after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#A1BC98] after:transition-all after:duration-300",
                     "hover:after:w-full",
-                    isScrolled || !isHomePage
-                      ? "text-[#778873] hover:text-[#2d3a29]"
-                      : "text-white/90 hover:text-white drop-shadow-sm",
+                    isHomePage && !isScrolled
+                      ? "text-white/90 hover:text-white drop-shadow-sm"
+                      : "text-[#778873] hover:text-[#2d3a29]",
                     isActiveLink(link.href) && "after:w-full text-[#A1BC98]",
                   )}
                 >
@@ -184,7 +188,7 @@ const Navbar = () => {
                 onClick={() => setLanguage(language === "EN" ? "ID" : "EN")}
                 className={cn(
                   "flex items-center gap-1 text-sm font-medium transition-colors duration-300",
-                  isScrolled || !isHomePage ? "text-[#778873] hover:text-[#2d3a29]" : "text-white/90 hover:text-white",
+                  isHomePage && !isScrolled ? "text-white/90 hover:text-white" : "text-[#778873] hover:text-[#2d3a29]",
                 )}
               >
                 <Globe size={16} />
@@ -205,9 +209,9 @@ const Navbar = () => {
                     "relative text-[14px] font-medium tracking-[0.5px] transition-colors duration-300",
                     "after:absolute after:bottom-[-4px] after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#A1BC98] after:transition-all after:duration-300",
                     "hover:after:w-full",
-                    isScrolled || !isHomePage
-                      ? "text-[#778873] hover:text-[#2d3a29]"
-                      : "text-white/90 hover:text-white drop-shadow-sm",
+                    isHomePage && !isScrolled
+                      ? "text-white/90 hover:text-white drop-shadow-sm"
+                      : "text-[#778873] hover:text-[#2d3a29]",
                     isActiveLink(link.href) && "after:w-full text-[#A1BC98]",
                   )}
                 >
@@ -218,23 +222,25 @@ const Navbar = () => {
 
             {/* Center Logo */}
             <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
-              {/* Text Logo - visible at top */}
               <span
                 className={cn(
                   "text-[22px] absolute whitespace-nowrap transition-all duration-500",
-                  isScrolled || !isHomePage ? "opacity-0 scale-90" : "opacity-100 scale-100 text-white drop-shadow-md",
+                  isScrolled
+                    ? "opacity-0 scale-90"
+                    : isHomePage
+                      ? "opacity-100 scale-100 text-white drop-shadow-md"
+                      : "opacity-100 scale-100 text-[#778873]",
                 )}
                 style={{ fontFamily: "'Knewave', cursive" }}
               >
                 Stay<span className="text-[#A1BC98]">in</span>UBUD
               </span>
-              {/* Image Logo - visible on scroll */}
               <img
                 src={logoImage || "/placeholder.svg"}
                 alt="StayinUBUD"
                 className={cn(
                   "h-28 transition-all duration-500",
-                  isScrolled || !isHomePage ? "opacity-100 scale-100" : "opacity-0 scale-90",
+                  isScrolled ? "opacity-100 scale-100" : "opacity-0 scale-90",
                 )}
               />
             </Link>
@@ -249,9 +255,9 @@ const Navbar = () => {
                     "relative text-[14px] font-medium tracking-[0.5px] transition-colors duration-300",
                     "after:absolute after:bottom-[-4px] after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#A1BC98] after:transition-all after:duration-300",
                     "hover:after:w-full",
-                    isScrolled || !isHomePage
-                      ? "text-[#778873] hover:text-[#2d3a29]"
-                      : "text-white/90 hover:text-white drop-shadow-sm",
+                    isHomePage && !isScrolled
+                      ? "text-white/90 hover:text-white drop-shadow-sm"
+                      : "text-[#778873] hover:text-[#2d3a29]",
                     isActiveLink(link.href) && "after:w-full text-[#A1BC98]",
                   )}
                 >
@@ -270,9 +276,9 @@ const Navbar = () => {
                 "p-2 rounded-lg transition-colors duration-300 min-w-[48px] min-h-[48px] flex items-center justify-center",
                 isOpen
                   ? "text-[#778873] hover:bg-[#F1F3E0]"
-                  : isScrolled || !isHomePage
-                    ? "text-[#778873] hover:bg-[#F1F3E0]"
-                    : "text-white hover:bg-white/20",
+                  : isHomePage && !isScrolled
+                    ? "text-white hover:bg-white/20"
+                    : "text-[#778873] hover:bg-[#F1F3E0]",
               )}
               aria-label={isOpen ? "Close menu" : "Open menu"}
               aria-expanded={isOpen}
@@ -301,25 +307,25 @@ const Navbar = () => {
 
             {/* Center Logo */}
             <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
-              {/* Text Logo - visible at top when not scrolled and menu closed */}
               <span
                 className={cn(
                   "text-[18px] absolute whitespace-nowrap transition-all duration-500",
-                  isScrolled || !isHomePage || isOpen
+                  isScrolled || isOpen
                     ? "opacity-0 scale-90"
-                    : "opacity-100 scale-100 text-white drop-shadow-md",
+                    : isHomePage
+                      ? "opacity-100 scale-100 text-white drop-shadow-md"
+                      : "opacity-100 scale-100 text-[#778873]",
                 )}
                 style={{ fontFamily: "'Knewave', cursive" }}
               >
                 Stay<span className="text-[#A1BC98]">in</span>UBUD
               </span>
-              {/* Image Logo - visible on scroll or when menu is open */}
               <img
                 src={logoImage || "/placeholder.svg"}
                 alt="StayinUBUD"
                 className={cn(
                   "h-20 transition-all duration-500",
-                  isScrolled || !isHomePage || isOpen ? "opacity-100 scale-100" : "opacity-0 scale-90",
+                  isScrolled || isOpen ? "opacity-100 scale-100" : "opacity-0 scale-90",
                 )}
               />
             </Link>
@@ -467,3 +473,4 @@ const Navbar = () => {
 }
 
 export default Navbar
+              
