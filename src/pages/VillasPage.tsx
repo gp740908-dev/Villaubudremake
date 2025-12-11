@@ -1,33 +1,33 @@
-import { useState, useMemo, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
-import { ChevronRight, SlidersHorizontal, ArrowUpDown, Loader2 } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import VillaCard from "@/components/VillaCard";
-import FilterSidebar from "@/components/FilterSidebar";
-import { useFilterStore, useBookingStore } from "@/store/bookingStore";
-import { useVillaStore } from "@/store/villaStore";
-import { filterVillas, sortVillas } from "@/utils/booking";
-import { mapDbVillaToFrontend } from "@/utils/dbMapping";
+"use client"
+
+import { useState, useMemo, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Link } from "react-router-dom"
+import { ChevronRight, SlidersHorizontal, ArrowUpDown, Loader2 } from "lucide-react"
+import Navbar from "@/components/Navbar"
+import Footer from "@/components/Footer"
+import VillaCard from "@/components/VillaCard"
+import FilterSidebar from "@/components/FilterSidebar"
+import { useFilterStore, useBookingStore } from "@/store/bookingStore"
+import { useVillaStore } from "@/store/villaStore"
+import { filterVillas, sortVillas } from "@/utils/booking"
+import { mapDbVillaToFrontend } from "@/utils/dbMapping"
 
 const VillasPage = () => {
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const filters = useFilterStore();
-  const { villas: dbVillas, fetchVillas, isLoading: isLoadingVillas } = useVillaStore();
-  const { globalBookedDates, fetchAllBookedDates } = useBookingStore();
+  const [showMobileFilters, setShowMobileFilters] = useState(false)
+  const filters = useFilterStore()
+  const { villas: dbVillas, fetchVillas, isLoading: isLoadingVillas } = useVillaStore()
+  const { globalBookedDates, fetchAllBookedDates } = useBookingStore()
 
   useEffect(() => {
-    fetchVillas();
-    fetchAllBookedDates();
-  }, [fetchVillas, fetchAllBookedDates]);
+    fetchVillas()
+    fetchAllBookedDates()
+  }, [fetchVillas, fetchAllBookedDates])
 
   // Convert DB villas to frontend format with booked dates merged
   const allVillas = useMemo(() => {
-    return dbVillas.map(villa =>
-      mapDbVillaToFrontend(villa, globalBookedDates[villa.id] || [])
-    );
-  }, [dbVillas, globalBookedDates]);
+    return dbVillas.map((villa) => mapDbVillaToFrontend(villa, globalBookedDates[villa.id] || []))
+  }, [dbVillas, globalBookedDates])
 
   const filteredVillas = useMemo(() => {
     const filtered = filterVillas(allVillas, {
@@ -37,42 +37,40 @@ const VillasPage = () => {
       priceRange: filters.priceRange,
       amenities: filters.amenities,
       location: filters.location,
-    });
-    return sortVillas(filtered, filters.sortBy);
-  }, [filters, allVillas]);
+    })
+    return sortVillas(filtered, filters.sortBy)
+  }, [filters, allVillas])
 
   const sortOptions = [
     { value: "rating", label: "Top Rated" },
     { value: "price-asc", label: "Price: Low to High" },
     { value: "price-desc", label: "Price: High to Low" },
     { value: "capacity", label: "Capacity" },
-  ];
+  ]
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
       {/* Hero Banner */}
-      <section className="pt-24 pb-12 bg-gradient-to-b from-secondary/50 to-background">
+      <section className="pt-28 pb-12 bg-gradient-to-b from-secondary/50 to-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-            <Link to="/" className="hover:text-primary transition-colors">Home</Link>
+            <Link to="/" className="hover:text-primary transition-colors">
+              Home
+            </Link>
             <ChevronRight size={14} />
             <span className="text-foreground font-medium">Villas</span>
           </nav>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <h1 className="font-display text-4xl lg:text-5xl font-semibold text-foreground mb-4">
               Our Villa Collection
             </h1>
             <p className="text-muted-foreground text-lg max-w-2xl">
-              Discover handpicked luxury villas in the heart of Ubud, each offering
-              a unique blend of Balinese tradition and modern comfort.
+              Discover handpicked luxury villas in the heart of Ubud, each offering a unique blend of Balinese tradition
+              and modern comfort.
             </p>
           </motion.div>
         </div>
@@ -186,7 +184,7 @@ const VillasPage = () => {
 
       <Footer />
     </div>
-  );
-};
+  )
+}
 
-export default VillasPage;
+export default VillasPage
