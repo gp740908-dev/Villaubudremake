@@ -1,0 +1,358 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* StayinUBUD Color Palette */
+    --background: 60 23% 95%; /* #F1F3E0 cream */
+    --foreground: 98 8% 28%; /* #778873 olive - dark text */
+
+    --card: 60 23% 95%;
+    --card-foreground: 98 8% 28%;
+
+    --popover: 60 23% 95%;
+    --popover-foreground: 98 8% 28%;
+
+    --primary: 110 18% 67%; /* #A1BC98 forest green */
+    --primary-foreground: 60 23% 95%;
+
+    --secondary: 82 28% 79%; /* #D2DCB6 sage */
+    --secondary-foreground: 98 8% 28%;
+
+    --muted: 82 28% 85%;
+    --muted-foreground: 98 8% 38%;
+
+    --accent: 110 18% 67%;
+    --accent-foreground: 60 23% 95%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 60 23% 95%;
+
+    --border: 82 20% 75%;
+    --input: 82 20% 80%;
+    --ring: 110 18% 67%;
+
+    --radius: 0.75rem;
+
+    /* Custom Design Tokens */
+    --cream: 60 23% 95%;
+    --sage: 82 28% 79%;
+    --forest: 110 18% 67%;
+    --olive: 98 8% 28%;
+    --olive-light: 98 8% 48%;
+    
+    /* Glassmorphism */
+    --glass-bg: 60 23% 95% / 0.7;
+    --glass-border: 82 28% 79% / 0.5;
+    
+    /* Shadows */
+    --shadow-soft: 0 4px 30px hsl(98 8% 28% / 0.1);
+    --shadow-elevated: 0 20px 60px hsl(98 8% 28% / 0.15);
+    
+    /* Fonts */
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+
+    --sidebar-background: 60 23% 95%;
+    --sidebar-foreground: 98 8% 28%;
+    --sidebar-primary: 110 18% 67%;
+    --sidebar-primary-foreground: 60 23% 95%;
+    --sidebar-accent: 82 28% 79%;
+    --sidebar-accent-foreground: 98 8% 28%;
+    --sidebar-border: 82 20% 75%;
+    --sidebar-ring: 110 18% 67%;
+  }
+
+  .dark {
+    --background: 98 8% 12%;
+    --foreground: 60 23% 92%;
+
+    --card: 98 8% 15%;
+    --card-foreground: 60 23% 92%;
+
+    --popover: 98 8% 15%;
+    --popover-foreground: 60 23% 92%;
+
+    --primary: 110 18% 67%;
+    --primary-foreground: 98 8% 12%;
+
+    --secondary: 98 8% 22%;
+    --secondary-foreground: 60 23% 92%;
+
+    --muted: 98 8% 20%;
+    --muted-foreground: 60 23% 70%;
+
+    --accent: 110 18% 50%;
+    --accent-foreground: 60 23% 95%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 60 23% 95%;
+
+    --border: 98 8% 25%;
+    --input: 98 8% 25%;
+    --ring: 110 18% 67%;
+
+    --sidebar-background: 98 8% 12%;
+    --sidebar-foreground: 60 23% 92%;
+    --sidebar-primary: 110 18% 67%;
+    --sidebar-primary-foreground: 98 8% 12%;
+    --sidebar-accent: 98 8% 22%;
+    --sidebar-accent-foreground: 60 23% 92%;
+    --sidebar-border: 98 8% 25%;
+    --sidebar-ring: 110 18% 67%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  /* Glassmorphism Card */
+  .glass-card {
+    @apply bg-background/70 backdrop-blur-xl border border-secondary/50 shadow-lg;
+  }
+
+  /* Premium Button Styles */
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 font-medium px-6 py-3 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .btn-outline {
+    @apply border-2 border-olive text-olive hover:bg-olive hover:text-cream transition-all duration-300 font-medium px-6 py-3 rounded-lg;
+  }
+
+  .btn-ghost {
+    @apply text-olive hover:bg-olive/10 transition-all duration-300 font-medium px-4 py-2 rounded-lg;
+  }
+
+  /* Section Styling */
+  .section-padding {
+    @apply py-20 lg:py-32 px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Animated Underline */
+  .animated-underline {
+    @apply relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left;
+  }
+
+  /* Image Overlay */
+  .image-overlay {
+    @apply relative overflow-hidden;
+  }
+
+  .image-overlay::after {
+    @apply content-[''] absolute inset-0 bg-gradient-to-t from-olive/60 via-transparent to-transparent opacity-0 transition-opacity duration-300;
+  }
+
+  .image-overlay:hover::after {
+    @apply opacity-100;
+  }
+
+  /* Scroll Reveal */
+  .reveal {
+    @apply opacity-0 translate-y-8 transition-all duration-700 ease-out;
+  }
+
+  .reveal.active {
+    @apply opacity-100 translate-y-0;
+  }
+}
+
+@layer utilities {
+  /* Text Gradient */
+  .text-gradient {
+    @apply bg-gradient-to-r from-forest to-olive bg-clip-text text-transparent;
+  }
+
+  /* Parallax */
+  .parallax {
+    transform-style: preserve-3d;
+  }
+
+  /* Hide scrollbar */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Custom animations */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-fade-up {
+    animation: fadeUp 0.8s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.5s ease-out forwards;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.6s ease-out forwards;
+  }
+}
+
+/* Custom Keyframes */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* React DatePicker Custom Styles */
+.react-datepicker-wrapper {
+  @apply w-full;
+}
+
+.react-datepicker__input-container {
+  @apply w-full;
+}
+
+.react-datepicker__input-container input {
+  @apply cursor-pointer;
+}
+
+.react-datepicker-popper {
+  @apply z-[9999] !important;
+}
+
+.react-datepicker {
+  @apply font-body border-border bg-background rounded-xl shadow-xl border !important;
+}
+
+.react-datepicker__header {
+  @apply bg-secondary border-b border-border rounded-t-xl !important;
+  padding-top: 12px !important;
+}
+
+.react-datepicker__current-month {
+  @apply font-display text-foreground font-semibold text-base !important;
+  margin-bottom: 8px !important;
+}
+
+.react-datepicker__day-names {
+  @apply flex justify-around;
+}
+
+.react-datepicker__day-name {
+  @apply text-muted-foreground font-medium text-xs w-8 !important;
+}
+
+.react-datepicker__month {
+  @apply p-2 !important;
+}
+
+.react-datepicker__week {
+  @apply flex justify-around;
+}
+
+.react-datepicker__day {
+  @apply text-foreground hover:bg-primary hover:text-primary-foreground rounded-lg transition-colors w-8 h-8 leading-8 m-0.5 text-sm !important;
+}
+
+.react-datepicker__day--today {
+  @apply font-bold ring-2 ring-primary ring-offset-1 !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--in-selecting-range,
+.react-datepicker__day--in-range {
+  @apply bg-primary text-primary-foreground !important;
+}
+
+.react-datepicker__day--keyboard-selected {
+  @apply bg-primary/50 text-foreground !important;
+}
+
+.react-datepicker__day--disabled {
+  @apply text-muted-foreground/40 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground/40 line-through !important;
+}
+
+.react-datepicker__day--outside-month {
+  @apply text-muted-foreground/30 !important;
+}
+
+.react-datepicker__navigation {
+  @apply top-3 !important;
+}
+
+.react-datepicker__navigation-icon::before {
+  @apply border-foreground !important;
+}
+
+.react-datepicker__navigation:hover *::before {
+  @apply border-primary !important;
+}
+
+/* Portal styles for mobile */
+.react-datepicker__portal {
+  @apply bg-foreground/50 backdrop-blur-sm fixed inset-0 z-[9999] flex items-center justify-center;
+}
+
+.react-datepicker__portal .react-datepicker {
+  @apply shadow-2xl scale-110 !important;
+}
+
+/* Triangle arrow */
+.react-datepicker__triangle {
+  display: none !important;
+}
