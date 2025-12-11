@@ -78,7 +78,7 @@ const AboutPage = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative h-[60vh] overflow-hidden">
+      <section className="relative h-[60vh] overflow-hidden mt-20">
         <img
           src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1920&h=1080&fit=crop"
           alt="Ubud landscape"
