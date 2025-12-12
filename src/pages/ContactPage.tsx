@@ -185,7 +185,7 @@ const ContactPage = () => {
           <div className="space-y-6">
             <div className="bg-white rounded-2xl p-8 shadow-lg">
               <div className="flex items-start gap-4 mb-6">
-                <div className.w-10 h-10 bg-[#A1BC98]/20 rounded-full flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 bg-[#A1BC98]/20 rounded-full flex items-center justify-center shrink-0">
                   <MapPin size={20} className="text-[#778873]" />
                 </div>
                 <div>
