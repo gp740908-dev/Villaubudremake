@@ -1,25 +1,20 @@
--- Create contact_submissions table
-create table if not exists contact_submissions (
-  id uuid default uuid_generate_v4() primary key,
-  name text not null,
-  email text not null,
-  subject text not null,
-  message text not null,
-  status text default 'new', -- new, read, replied
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+CREATE TABLE public.contact_submissions (
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    name character varying NOT NULL,
+    email character varying NOT NULL,
+    phone character varying,
+    subject character varying,
+    message text NOT NULL,
+    inquiry_type character varying DEFAULT 'general'::character varying CHECK (inquiry_type::text = ANY (ARRAY['general'::character varying, 'booking'::character varying, 'feedback'::character varying, 'complaint'::character varying, 'partnership'::character varying, 'other'::character varying]::text[])),
+    status character varying DEFAULT 'new'::character varying CHECK (status::text = ANY (ARRAY['new'::character varying, 'read'::character varying, 'replied'::character varying, 'resolved'::character varying, 'spam'::character varying]::text[])),
+    replied_at timestamp with time zone,
+    replied_by uuid,
+    reply_message text,
+    ip_address character varying,
+    user_agent text,
+    source_page character varying,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT contact_submissions_pkey PRIMARY KEY (id),
+    CONSTRAINT contact_submissions_replied_by_fkey FOREIGN KEY (replied_by) REFERENCES public.admin_users(id)
 );
-
--- Enable RLS
-alter table contact_submissions enable row level security;
-
--- Policy: Allow public to insert (anyone can send a message)
-create policy "Anyone can insert contact submissions"
-  on contact_submissions for insert
-  with check (true);
-
--- Policy: Allow admins to view all submissions
-create policy "Admins can view contact submissions"
-  on contact_submissions for select
-  using (auth.role() = 'service_role' or exists (
-    select 1 from admin_users where id = auth.uid()
-  ));

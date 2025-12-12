@@ -1,302 +1,265 @@
--- =============================================
--- DATABASE SETUP
--- =============================================
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
 
--- ----------------------------------------------------------------
--- 1. Create Tables
--- ----------------------------------------------------------------
-
--- public.villas
-CREATE TABLE IF NOT EXISTS public.villas (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL,
-    tagline TEXT,
-    description TEXT,
-    short_description TEXT,
-    price_per_night NUMERIC(10, 2) NOT NULL,
-    capacity INT NOT NULL,
-    bedrooms INT NOT NULL,
-    bathrooms INT NOT NULL,
-    images TEXT[],
-    amenities TEXT[],
-    rating NUMERIC(3, 2),
-    review_count INT,
-    location TEXT,
-    cleaning_fee NUMERIC(10, 2) DEFAULT 0,
-    service_fee NUMERIC(10, 2) DEFAULT 0,
-    minimum_stay INT DEFAULT 1,
-    is_available BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.admin_activity_logs (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  admin_id uuid,
+  admin_email character varying,
+  action character varying NOT NULL,
+  entity_type character varying,
+  entity_id uuid,
+  details jsonb,
+  old_values jsonb,
+  new_values jsonb,
+  ip_address character varying,
+  user_agent text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT admin_activity_logs_pkey PRIMARY KEY (id),
+  CONSTRAINT admin_activity_logs_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES public.admin_users(id)
 );
-
--- public.bookings
-CREATE TABLE IF NOT EXISTS public.bookings (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    reference_number TEXT UNIQUE NOT NULL,
-    villa_id UUID REFERENCES public.villas(id),
-    check_in DATE NOT NULL,
-    check_out DATE NOT NULL,
-    guests INT NOT NULL,
-    total_price NUMERIC(10, 2) NOT NULL,
-    status TEXT NOT NULL CHECK (status IN ('pending', 'confirmed', 'completed', 'cancelled')),
-    payment_method TEXT,
-    special_requests TEXT,
-    guest_name TEXT NOT NULL,
-    guest_email TEXT NOT NULL,
-    guest_phone TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.admin_users (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  email character varying NOT NULL UNIQUE,
+  password_hash character varying NOT NULL,
+  name character varying NOT NULL,
+  role character varying DEFAULT 'admin'::character varying CHECK (role::text = ANY (ARRAY['super_admin'::character varying, 'admin'::character varying, 'editor'::character varying]::text[])),
+  avatar_url text,
+  is_active boolean DEFAULT true,
+  last_login timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT admin_users_pkey PRIMARY KEY (id)
 );
-
--- public.blog_posts
-CREATE TABLE IF NOT EXISTS public.blog_posts (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    slug TEXT UNIQUE NOT NULL,
-    title TEXT NOT NULL,
-    content TEXT,
-    author TEXT,
-    image_url TEXT,
-    tags TEXT[],
-    is_published BOOLEAN DEFAULT FALSE,
-    published_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.blog_categories (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  name character varying NOT NULL,
+  slug character varying NOT NULL UNIQUE,
+  description text,
+  color character varying DEFAULT '#2D5A47'::character varying,
+  is_active boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT blog_categories_pkey PRIMARY KEY (id)
 );
-
--- public.testimonials
-CREATE TABLE IF NOT EXISTS public.testimonials (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    author_name TEXT NOT NULL,
-    author_location TEXT,
-    author_avatar_url TEXT,
-    rating NUMERIC(2, 1) NOT NULL CHECK (rating >= 1 AND rating <= 5),
-    content TEXT NOT NULL,
-    is_approved BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.blog_posts (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  title character varying NOT NULL,
+  slug character varying NOT NULL UNIQUE,
+  excerpt text,
+  content text,
+  featured_image text,
+  gallery ARRAY DEFAULT '{}'::text[],
+  category_id uuid,
+  tags ARRAY DEFAULT '{}'::text[],
+  author_id uuid,
+  author_name character varying,
+  status character varying DEFAULT 'draft'::character varying CHECK (status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying, 'scheduled'::character varying, 'archived'::character varying]::text[])),
+  published_at timestamp with time zone,
+  scheduled_at timestamp with time zone,
+  views integer DEFAULT 0,
+  likes integer DEFAULT 0,
+  meta_title character varying,
+  meta_description text,
+  is_featured boolean DEFAULT false,
+  allow_comments boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT blog_posts_pkey PRIMARY KEY (id),
+  CONSTRAINT blog_posts_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.blog_categories(id),
+  CONSTRAINT blog_posts_author_id_fkey FOREIGN KEY (author_id) REFERENCES public.admin_users(id)
 );
-
--- public.gallery_items
-CREATE TABLE IF NOT EXISTS public.gallery_items (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    image_url TEXT NOT NULL,
-    caption TEXT,
-    category TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.bookings (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  reference_number character varying NOT NULL UNIQUE,
+  villa_id uuid,
+  guest_name character varying NOT NULL,
+  guest_email character varying NOT NULL,
+  guest_phone character varying,
+  guest_country character varying,
+  guest_id_type character varying,
+  guest_id_number character varying,
+  check_in date NOT NULL,
+  check_out date NOT NULL,
+  guests integer NOT NULL DEFAULT 1,
+  nights integer NOT NULL DEFAULT 1,
+  base_price bigint,
+  cleaning_fee bigint DEFAULT 0,
+  service_fee bigint DEFAULT 0,
+  discount_amount bigint DEFAULT 0,
+  discount_code character varying,
+  total_price bigint NOT NULL DEFAULT 0,
+  status character varying DEFAULT 'pending'::character varying CHECK (status::text = ANY (ARRAY['pending'::character varying, 'confirmed'::character varying, 'checked_in'::character varying, 'checked_out'::character varying, 'completed'::character varying, 'cancelled'::character varying, 'no_show'::character varying]::text[])),
+  payment_status character varying DEFAULT 'pending'::character varying CHECK (payment_status::text = ANY (ARRAY['pending'::character varying, 'partial'::character varying, 'paid'::character varying, 'refunded'::character varying, 'failed'::character varying]::text[])),
+  payment_method character varying,
+  special_requests text,
+  arrival_time character varying,
+  notes text,
+  cancelled_at timestamp with time zone,
+  cancelled_reason text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT bookings_pkey PRIMARY KEY (id),
+  CONSTRAINT bookings_villa_id_fkey FOREIGN KEY (villa_id) REFERENCES public.villas(id)
 );
-
--- public.offers
-CREATE TABLE IF NOT EXISTS public.offers (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title TEXT NOT NULL,
-    description TEXT,
-    discount_code TEXT UNIQUE,
-    discount_percentage NUMERIC(5, 2),
-    valid_from DATE,
-    valid_to DATE,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.contact_submissions (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  name character varying NOT NULL,
+  email character varying NOT NULL,
+  phone character varying,
+  subject character varying,
+  message text NOT NULL,
+  inquiry_type character varying DEFAULT 'general'::character varying CHECK (inquiry_type::text = ANY (ARRAY['general'::character varying, 'booking'::character varying, 'feedback'::character varying, 'complaint'::character varying, 'partnership'::character varying, 'other'::character varying]::text[])),
+  status character varying DEFAULT 'new'::character varying CHECK (status::text = ANY (ARRAY['new'::character varying, 'read'::character varying, 'replied'::character varying, 'resolved'::character varying, 'spam'::character varying]::text[])),
+  replied_at timestamp with time zone,
+  replied_by uuid,
+  reply_message text,
+  ip_address character varying,
+  user_agent text,
+  source_page character varying,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT contact_submissions_pkey PRIMARY KEY (id),
+  CONSTRAINT contact_submissions_replied_by_fkey FOREIGN KEY (replied_by) REFERENCES public.admin_users(id)
 );
-
--- public.settings
-CREATE TABLE IF NOT EXISTS public.settings (
-    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    key TEXT UNIQUE NOT NULL,
-    value JSONB,
-    category TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.gallery_images (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  title character varying,
+  description text,
+  image_url text NOT NULL,
+  thumbnail_url text,
+  category character varying DEFAULT 'general'::character varying,
+  villa_id uuid,
+  tags ARRAY DEFAULT '{}'::text[],
+  width integer,
+  height integer,
+  file_size integer,
+  mime_type character varying,
+  is_featured boolean DEFAULT false,
+  is_visible boolean DEFAULT true,
+  sort_order integer DEFAULT 0,
+  photographer character varying,
+  location character varying,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT gallery_images_pkey PRIMARY KEY (id)
 );
-
--- public.admin_users
-CREATE TABLE IF NOT EXISTS public.admin_users (
-    id UUID PRIMARY KEY REFERENCES auth.users(id),
-    full_name TEXT,
-    avatar_url TEXT,
-    role TEXT DEFAULT 'editor',
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.offers (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  title character varying NOT NULL,
+  slug character varying UNIQUE,
+  description text,
+  short_description character varying,
+  discount_type character varying NOT NULL CHECK (discount_type::text = ANY (ARRAY['percentage'::character varying, 'fixed'::character varying, 'nights_free'::character varying]::text[])),
+  discount_value integer NOT NULL DEFAULT 0,
+  promo_code character varying UNIQUE,
+  banner_image text,
+  badge_text character varying,
+  badge_color character varying DEFAULT '#2D5A47'::character varying,
+  start_date date,
+  end_date date,
+  minimum_nights integer DEFAULT 1,
+  max_nights integer,
+  min_booking_value bigint DEFAULT 0,
+  applicable_villas ARRAY DEFAULT '{}'::text[],
+  max_uses integer,
+  current_uses integer DEFAULT 0,
+  max_uses_per_guest integer DEFAULT 1,
+  is_active boolean DEFAULT true,
+  is_featured boolean DEFAULT false,
+  is_public boolean DEFAULT true,
+  terms text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT offers_pkey PRIMARY KEY (id)
 );
-
--- public.contact_submissions
-CREATE TABLE IF NOT EXISTS public.contact_submissions (
-    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    full_name TEXT NOT NULL,
-    email TEXT NOT NULL,
-    subject TEXT,
-    message TEXT NOT NULL,
-    is_read BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.settings (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  key character varying NOT NULL UNIQUE,
+  value text,
+  type character varying DEFAULT 'string'::character varying CHECK (type::text = ANY (ARRAY['string'::character varying, 'number'::character varying, 'boolean'::character varying, 'json'::character varying, 'html'::character varying]::text[])),
+  category character varying DEFAULT 'general'::character varying,
+  label character varying,
+  description text,
+  is_public boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT settings_pkey PRIMARY KEY (id)
 );
-
--- public.faqs
-CREATE TABLE IF NOT EXISTS public.faqs (
-    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    question TEXT NOT NULL,
-    answer TEXT NOT NULL,
-    category TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.testimonials (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  guest_name character varying NOT NULL,
+  guest_country character varying,
+  guest_avatar text,
+  villa_id uuid,
+  villa_name character varying,
+  booking_id uuid,
+  rating integer NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  title character varying,
+  review text,
+  ratings jsonb DEFAULT '{}'::jsonb,
+  source character varying DEFAULT 'direct'::character varying CHECK (source::text = ANY (ARRAY['direct'::character varying, 'google'::character varying, 'tripadvisor'::character varying, 'airbnb'::character varying, 'booking'::character varying]::text[])),
+  source_url text,
+  is_featured boolean DEFAULT false,
+  is_approved boolean DEFAULT false,
+  is_visible boolean DEFAULT true,
+  host_response text,
+  responded_at timestamp with time zone,
+  responded_by uuid,
+  review_date date,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT testimonials_pkey PRIMARY KEY (id),
+  CONSTRAINT testimonials_villa_id_fkey FOREIGN KEY (villa_id) REFERENCES public.villas(id),
+  CONSTRAINT testimonials_booking_id_fkey FOREIGN KEY (booking_id) REFERENCES public.bookings(id),
+  CONSTRAINT testimonials_responded_by_fkey FOREIGN KEY (responded_by) REFERENCES public.admin_users(id)
 );
-
-
--- ----------------------------------------------------------------
--- 2. Create Functions & Triggers
--- ----------------------------------------------------------------
-
--- Function to generate a unique booking reference number
-CREATE OR REPLACE FUNCTION generate_reference_number()
-RETURNS TEXT AS $$
-DECLARE
-    new_ref TEXT;
-BEGIN
-    LOOP
-        new_ref := 'SIU-' || to_char(NOW(), 'YYMMDD') || '-' || upper(substr(md5(random()::text), 1, 6));
-        IF NOT EXISTS (SELECT 1 FROM public.bookings WHERE reference_number = new_ref) THEN
-            RETURN new_ref;
-        END IF;
-    END LOOP;
-END;
-$$ LANGUAGE plpgsql;
-
--- Set default reference number on new booking
-ALTER TABLE public.bookings
-ALTER COLUMN reference_number SET DEFAULT generate_reference_number();
-
-
--- ----------------------------------------------------------------
--- 3. Seed Data (Optional)
--- ----------------------------------------------------------------
-
--- Note: Seeding is optional and can be managed via the admin panel.
--- This is just for initial setup.
-
--- Clear existing data before seeding
--- TRUNCATE TABLE public.villas, public.bookings, public.blog_posts, public.testimonials, public.gallery_items, public.offers, public.settings RESTART IDENTITY CASCADE;
-
--- Seed settings
-INSERT INTO public.settings (key, value, category) VALUES
-  ('site_name', '"StayinUBUD"', 'general'),
-  ('site_tagline', '"Luxury Villa Rentals in Ubud, Bali"', 'general'),
-  ('contact_email', '"info@stayinubud.com"', 'general'),
-  ('contact_phone', '"+62 812 3456 7890"', 'general'),
-  ('whatsapp', '"+62 812 3456 7890"', 'general'),
-  ('address', '"Jl. Raya Ubud No. 88, Ubud, Gianyar, Bali 80571"', 'general'),
-  ('currency', '"IDR"', 'booking'),
-  ('tax_rate', '11', 'booking'),
-  ('min_booking_days', '2', 'booking'),
-  ('max_booking_days', '30', 'booking'),
-  ('social_instagram', '"https://instagram.com/stayinubud"', 'social'),
-  ('social_facebook', '"https://facebook.com/stayinubud"', 'social')
-ON CONFLICT (key) DO NOTHING;
-
--- Seed FAQs
-INSERT INTO public.faqs (question, answer, category) VALUES
-    ('What are the check-in and check-out times?', 'Check-in is at 2:00 PM and check-out is at 12:00 PM (noon). Early check-in or late check-out may be available upon request for an additional fee, subject to availability.', 'General'),
-    ('Is airport transfer included?', 'Airport transfer is not included in the standard rate, but we can arrange a private car for you at an additional cost. Please contact us with your flight details to book.', 'General'),
-    ('Are pets allowed?', 'Unfortunately, to ensure the comfort and safety of all our guests, we do not allow pets in the villas.', 'General'),
-    ('What payment methods do you accept?', 'We accept bank transfer (BCA, Mandiri), credit/debit cards (Visa, Mastercard), and Indonesian e-wallets including GoPay, OVO, and DANA.', 'Payments'),
-    ('Is a deposit required?', 'Yes, we require a 50% deposit to confirm your booking. The remaining balance is due 7 days before check-in or upon arrival for last-minute bookings.', 'Payments'),
-    ('Do you charge in USD or IDR?', 'All prices are displayed in IDR (Indonesian Rupiah). International guests can pay in their local currency; the conversion will be handled by your bank.', 'Payments'),
-    ('What is the cancellation policy?', 'Bookings cancelled more than 30 days before check-in receive a full refund. Cancellations between 7-30 days receive a 50% refund. Cancellations less than 7 days before check-in are non-refundable.', 'Policies'),
-    ('Is smoking allowed in the villas?', 'Smoking is strictly prohibited inside all enclosed areas of the villa. Guests are welcome to smoke in designated outdoor areas.', 'Policies')
-ON CONFLICT (id) DO NOTHING;
-
-
--- ----------------------------------------------------------------
--- 4. Row Level Security (RLS)
--- ----------------------------------------------------------------
-
--- Enable RLS for all tables
-ALTER TABLE public.villas ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.testimonials ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.gallery_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.offers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.contact_submissions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.faqs ENABLE ROW LEVEL SECURITY;
-
-
--- ----------------------------------------------------------------
--- 5. RLS Policies
--- ----------------------------------------------------------------
-
--- Function to check if a user is an admin
-CREATE OR REPLACE FUNCTION is_admin()
-RETURNS BOOLEAN AS $$
-BEGIN
-    RETURN EXISTS (
-        SELECT 1
-        FROM public.admin_users
-        WHERE id = auth.uid()
-    );
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-
--- Policies for public access (Read-only)
-DROP POLICY IF EXISTS "Public can read published/approved content" ON public.villas;
-CREATE POLICY "Public can read published/approved content" ON public.villas FOR SELECT USING (is_available = TRUE);
-
-DROP POLICY IF EXISTS "Public can read published/approved content" ON public.blog_posts;
-CREATE POLICY "Public can read published/approved content" ON public.blog_posts FOR SELECT USING (is_published = TRUE);
-
-DROP POLICY IF EXISTS "Public can read published/approved content" ON public.testimonials;
-CREATE POLICY "Public can read published/approved content" ON public.testimonials FOR SELECT USING (is_approved = TRUE);
-
-DROP POLICY IF EXISTS "Public can read published/approved content" ON public.gallery_items;
-CREATE POLICY "Public can read published/approved content" ON public.gallery_items FOR SELECT USING (TRUE);
-
-DROP POLICY IF EXISTS "Public can read published/approved content" ON public.offers;
-CREATE POLICY "Public can read published/approved content" ON public.offers FOR SELECT USING (is_active = TRUE AND valid_to >= NOW());
-
-DROP POLICY IF EXISTS "Public can read published/approved content" ON public.settings;
-CREATE POLICY "Public can read published/approved content" ON public.settings FOR SELECT USING (TRUE);
-
-DROP POLICY IF EXISTS "Public can read published/approved content" ON public.faqs;
-CREATE POLICY "Public can read published/approved content" ON public.faqs FOR SELECT USING (TRUE);
-
-
--- Policies for admin access (Full access)
-DROP POLICY IF EXISTS "Admins have full access" ON public.villas;
-CREATE POLICY "Admins have full access" ON public.villas FOR ALL USING (is_admin());
-
-DROP POLICY IF EXISTS "Admins have full access" ON public.bookings;
-CREATE POLICY "Admins have full access" ON public.bookings FOR ALL USING (is_admin());
-
-DROP POLICY IF EXISTS "Admins have full access" ON public.blog_posts;
-CREATE POLICY "Admins have full access" ON public.blog_posts FOR ALL USING (is_admin());
-
-DROP POLICY IF EXISTS "Admins have full access" ON public.testimonials;
-CREATE POLICY "Admins have full access" ON public.testimonials FOR ALL USING (is_admin());
-
-DROP POLICY IF EXISTS "Admins have full access" ON public.gallery_items;
-CREATE POLICY "Admins have full access" ON public.gallery_items FOR ALL USING (is_admin());
-
-DROP POLICY IF EXISTS "Admins have full access" ON public.offers;
-CREATE POLICY "Admins have full access" ON public.offers FOR ALL USING (is_admin());
-
-DROP POLICY IF EXISTS "Admins have full access" ON public.settings;
-CREATE POLICY "Admins have full access" ON public.settings FOR ALL USING (is_admin());
-
-DROP POLICY IF EXISTS "Admins have full access" ON public.admin_users;
-CREATE POLICY "Admins have full access" ON public.admin_users FOR ALL USING (is_admin());
-
-DROP POLICY IF EXISTS "Admins have full access" ON public.contact_submissions;
-CREATE POLICY "Admins have full access" ON public.contact_submissions FOR ALL USING (is_admin());
-
-DROP POLICY IF EXISTS "Admins have full access" ON public.faqs;
-CREATE POLICY "Admins have full access" ON public.faqs FOR ALL USING (is_admin());
-
-
--- Policies for specific actions
--- Allow users to see their own bookings
-DROP POLICY IF EXISTS "Users can view their own bookings" ON public.bookings;
-CREATE POLICY "Users can view their own bookings" ON public.bookings
-  FOR SELECT
-  USING (auth.jwt()->>'email' = guest_email);
-
--- Allow public to create contact submissions
-DROP POLICY IF EXISTS "Public can create contact submissions" ON public.contact_submissions;
-CREATE POLICY "Public can create contact submissions" ON public.contact_submissions FOR INSERT WITH CHECK (TRUE);
-
--- Allow authenticated users to create bookings
-DROP POLICY IF EXISTS "Authenticated users can create bookings" ON public.bookings;
-CREATE POLICY "Authenticated users can create bookings" ON public.bookings FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE TABLE public.villa_booked_dates (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  villa_id uuid NOT NULL,
+  booking_id uuid,
+  booked_date date NOT NULL,
+  status character varying DEFAULT 'booked'::character varying CHECK (status::text = ANY (ARRAY['booked'::character varying, 'blocked'::character varying, 'maintenance'::character varying]::text[])),
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT villa_booked_dates_pkey PRIMARY KEY (id),
+  CONSTRAINT villa_booked_dates_booking_id_fkey FOREIGN KEY (booking_id) REFERENCES public.bookings(id),
+  CONSTRAINT villa_booked_dates_villa_id_fkey FOREIGN KEY (villa_id) REFERENCES public.villas(id)
+);
+CREATE TABLE public.villas (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  name character varying NOT NULL,
+  slug character varying UNIQUE,
+  tagline character varying,
+  description text,
+  short_description character varying,
+  price_per_night bigint NOT NULL DEFAULT 0,
+  original_price bigint,
+  cleaning_fee bigint DEFAULT 0,
+  service_fee bigint DEFAULT 0,
+  capacity integer NOT NULL DEFAULT 2,
+  bedrooms integer NOT NULL DEFAULT 1,
+  bathrooms integer NOT NULL DEFAULT 1,
+  beds integer DEFAULT 1,
+  location character varying DEFAULT 'Ubud, Bali'::character varying,
+  address text,
+  coordinates jsonb DEFAULT '{"lat": -8.5069, "lng": 115.2625}'::jsonb,
+  main_image text,
+  images ARRAY DEFAULT '{}'::text[],
+  video_url text,
+  virtual_tour_url text,
+  amenities ARRAY DEFAULT '{}'::text[],
+  highlights ARRAY DEFAULT '{}'::text[],
+  house_rules ARRAY DEFAULT '{}'::text[],
+  is_featured boolean DEFAULT false,
+  is_available boolean DEFAULT true,
+  status character varying DEFAULT 'active'::character varying CHECK (status::text = ANY (ARRAY['active'::character varying, 'inactive'::character varying, 'maintenance'::character varying]::text[])),
+  rating numeric DEFAULT 5.0 CHECK (rating >= 0::numeric AND rating <= 5::numeric),
+  review_count integer DEFAULT 0,
+  check_in_time character varying DEFAULT '14:00'::character varying,
+  check_out_time character varying DEFAULT '11:00'::character varying,
+  minimum_stay integer DEFAULT 1,
+  max_nights integer DEFAULT 30,
+  meta_title character varying,
+  meta_description text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT villas_pkey PRIMARY KEY (id)
+);

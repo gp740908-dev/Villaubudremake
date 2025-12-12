@@ -8,13 +8,12 @@ import { useSettingsStore } from '@/store/settingsStore';
 
 const ContactPage = () => {
   const {
-    settings,
     fetchSettings,
     getSetting,
   } = useSettingsStore();
 
   const [formData, setFormData] = useState({
-    full_name: '',
+    name: '',
     email: '',
     subject: '',
     message: '',
@@ -34,7 +33,7 @@ const ContactPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.full_name || !formData.email || !formData.message) {
+    if (!formData.name || !formData.email || !formData.message) {
       toast({ title: 'Missing fields', description: 'Please fill in all required fields.', variant: 'destructive' });
       return;
     }
@@ -49,7 +48,7 @@ const ContactPage = () => {
         description: "We'll get back to you within 24 hours.",
         className: 'bg-[#778873] text-white border-none',
       });
-      setFormData({ full_name: '', email: '', subject: '', message: '' });
+      setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -121,8 +120,8 @@ const ContactPage = () => {
                 <label className="block text-sm font-medium text-[#2d3a29] mb-2">Name *</label>
                 <input
                   type="text"
-                  value={formData.full_name}
-                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border border-[#d4dbc8] focus:outline-none focus:border-[#A1BC98]"
                   placeholder="Your name"
                 />
