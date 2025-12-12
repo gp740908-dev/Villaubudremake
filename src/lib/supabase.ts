@@ -4,10 +4,16 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing Supabase environment variables")
+  throw new Error("Missing Supabase environment variables.  Please check your .env. local file.")
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession:  true,
+    detectSessionInUrl: true,
+  },
+})
 
 // Database types
 export interface DbVilla {
@@ -19,7 +25,7 @@ export interface DbVilla {
   price_per_night: number
   capacity: number
   bedrooms: number
-  bathrooms: number
+  bathrooms:  number
   images: string[]
   amenities: string[]
   rating: number
@@ -36,7 +42,7 @@ export interface DbBooking {
   id: string
   reference_number: string
   villa_id: string
-  check_in: string
+  check_in:  string
   check_out: string
   guests: number
   total_price: number
@@ -44,7 +50,7 @@ export interface DbBooking {
   payment_method: string | null
   special_requests: string | null
   guest_name: string
-  guest_email: string
+  guest_email:  string
   guest_phone: string | null
   created_at: string
 }
