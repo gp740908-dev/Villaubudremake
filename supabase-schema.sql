@@ -1,7 +1,7 @@
 -- WARNING: This schema is for context only and is not meant to be run.
 -- Table order and constraints may not be valid for execution.
 
-CREATE TABLE public.admin_users (
+CREATE TABLE IF NOT EXISTS public.admin_users (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   email character varying NOT NULL UNIQUE,
   password_hash character varying NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE public.admin_users (
   CONSTRAINT admin_users_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE public.admin_activity_logs (
+CREATE TABLE IF NOT EXISTS public.admin_activity_logs (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   admin_id uuid,
   admin_email character varying,
@@ -32,7 +32,7 @@ CREATE TABLE public.admin_activity_logs (
   CONSTRAINT admin_activity_logs_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES public.admin_users(id)
 );
 
-CREATE TABLE public.blog_categories (
+CREATE TABLE IF NOT EXISTS public.blog_categories (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   name character varying NOT NULL,
   slug character varying NOT NULL UNIQUE,
@@ -43,7 +43,7 @@ CREATE TABLE public.blog_categories (
   CONSTRAINT blog_categories_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE public.blog_posts (
+CREATE TABLE IF NOT EXISTS public.blog_posts (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   title character varying NOT NULL,
   slug character varying NOT NULL UNIQUE,
@@ -71,7 +71,7 @@ CREATE TABLE public.blog_posts (
   CONSTRAINT blog_posts_author_id_fkey FOREIGN KEY (author_id) REFERENCES public.admin_users(id)
 );
 
-CREATE TABLE public.villas (
+CREATE TABLE IF NOT EXISTS public.villas (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   name character varying NOT NULL,
   slug character varying UNIQUE,
@@ -112,7 +112,7 @@ CREATE TABLE public.villas (
   CONSTRAINT villas_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE public.bookings (
+CREATE TABLE IF NOT EXISTS public.bookings (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   reference_number character varying NOT NULL UNIQUE,
   villa_id uuid,
@@ -146,7 +146,7 @@ CREATE TABLE public.bookings (
   CONSTRAINT bookings_villa_id_fkey FOREIGN KEY (villa_id) REFERENCES public.villas(id)
 );
 
-CREATE TABLE public.contact_submissions (
+CREATE TABLE IF NOT EXISTS public.contact_submissions (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   name character varying NOT NULL,
   email character varying NOT NULL,
@@ -167,7 +167,7 @@ CREATE TABLE public.contact_submissions (
   CONSTRAINT contact_submissions_replied_by_fkey FOREIGN KEY (replied_by) REFERENCES public.admin_users(id)
 );
 
-CREATE TABLE public.gallery_images (
+CREATE TABLE IF NOT EXISTS public.gallery_images (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   title character varying,
   description text,
@@ -190,7 +190,7 @@ CREATE TABLE public.gallery_images (
   CONSTRAINT gallery_images_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE public.offers (
+CREATE TABLE IF NOT EXISTS public.offers (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   title character varying NOT NULL,
   slug character varying UNIQUE,
@@ -220,7 +220,7 @@ CREATE TABLE public.offers (
   CONSTRAINT offers_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE public.settings (
+CREATE TABLE IF NOT EXISTS public.settings (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   key character varying NOT NULL UNIQUE,
   value text,
@@ -234,7 +234,7 @@ CREATE TABLE public.settings (
   CONSTRAINT settings_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE public.testimonials (
+CREATE TABLE IF NOT EXISTS public.testimonials (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   guest_name character varying NOT NULL,
   guest_country character varying,
@@ -263,7 +263,7 @@ CREATE TABLE public.testimonials (
   CONSTRAINT testimonials_responded_by_fkey FOREIGN KEY (responded_by) REFERENCES public.admin_users(id)
 );
 
-CREATE TABLE public.villa_booked_dates (
+CREATE TABLE IF NOT EXISTS public.villa_booked_dates (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   villa_id uuid NOT NULL,
   booking_id uuid,
