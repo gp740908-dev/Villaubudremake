@@ -418,4 +418,218 @@ const EditVillaModal = ({
                                     <input
                                         type="number"
                                         value={formData.cleaning_fee}
-                                        onChange=
+                                        onChange={(e) => setFormData({ ...formData, cleaning_fee: Number(e.target.value) })}
+                                        className="admin-input"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-[#2d3a29] mb-2">Service Fee (IDR)</label>
+                                    <input
+                                        type="number"
+                                        value={formData.service_fee}
+                                        onChange={(e) => setFormData({ ...formData, service_fee: Number(e.target.value) })}
+                                        className="admin-input"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="checkbox"
+                                    id="is_available"
+                                    checked={formData.is_available}
+                                    onChange={(e) => setFormData({ ...formData, is_available: e.target.checked })}
+                                    className="w-5 h-5"
+                                />
+                                <label htmlFor="is_available" className="text-sm font-medium text-[#2d3a29]">
+                                    Villa is available for booking
+                                </label>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer */}
+                <div className="p-6 border-t border-[#d4dbc8] flex justify-end gap-3">
+                    <button onClick={onClose} className="admin-btn admin-btn-outline">
+                        Cancel
+                    </button>
+                    <button onClick={handleSave} className="admin-btn admin-btn-primary" disabled={isLoading}>
+                        {isLoading ? (
+                            <span className="flex items-center gap-2">
+                                <Loader2 size={16} className="animate-spin" />
+                                Saving...
+                            </span>
+                        ) : (
+                            'Save Villa'
+                        )}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// Main Villa Management Page
+const AdminVillas = () => {
+    const { villas, isLoading, error, fetchVillas, createVilla, updateVilla, deleteVilla } = useVillaStore();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [selectedVilla, setSelectedVilla] = useState<Villa | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        fetchVillas();
+    }, [fetchVillas]);
+
+    const filteredVillas = villas.filter((villa) => {
+        const matchesSearch = villa.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesStatus =
+            statusFilter === 'all' ||
+            (statusFilter === 'available' && villa.is_available) ||
+            (statusFilter === 'unavailable' && !villa.is_available);
+        return matchesSearch && matchesStatus;
+    });
+
+    const handleEdit = (villa: Villa) => {
+        setSelectedVilla(villa);
+        setEditModalOpen(true);
+    };
+
+    const handleAddNew = () => {
+        setSelectedVilla(null);
+        setEditModalOpen(true);
+    };
+
+    const handleSave = async (data: Partial<Villa>) => {
+        setIsSaving(true);
+        try {
+            if (selectedVilla) {
+                await updateVilla(selectedVilla.id, data);
+                toast({ title: 'Villa updated', description: 'Villa details have been saved.' });
+            } else {
+                await createVilla(data as any);
+                toast({ title: 'Villa created', description: 'New villa has been added.' });
+            }
+            setEditModalOpen(false);
+        } catch (err) {
+            toast({ title: 'Error', description: 'Failed to save villa.', variant: 'destructive' });
+        }
+        setIsSaving(false);
+    };
+
+    const handleDelete = async (villa: Villa) => {
+        if (window.confirm(`Are you sure you want to delete "${villa.name}"?`)) {
+            const success = await deleteVilla(villa.id);
+            if (success) {
+                toast({ title: 'Villa deleted', description: `${villa.name} has been removed.` });
+            } else {
+                toast({ title: 'Error', description: 'Failed to delete villa.', variant: 'destructive' });
+            }
+        }
+    };
+
+    const handleViewCalendar = (villa: Villa) => {
+        window.location.href = `/admin/villas/${villa.id}/calendar`;
+    };
+
+    const handleToggleStatus = async (villa: Villa) => {
+        const success = await updateVilla(villa.id, { is_available: !villa.is_available });
+        if (success) {
+            toast({
+                title: villa.is_available ? 'Villa marked unavailable' : 'Villa marked available',
+                description: `${villa.name} status updated.`,
+            });
+        }
+    };
+
+    if (isLoading && villas.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 size={32} className="animate-spin text-[#778873]" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-[#2d3a29]">Villa Management</h1>
+                    <p className="text-sm text-[#6b7c67]">Manage your villa properties ({villas.length} villas)</p>
+                </div>
+                <button onClick={handleAddNew} className="admin-btn admin-btn-primary">
+                    <Plus size={18} />
+                    Add New Villa
+                </button>
+            </div>
+
+            {error && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
+                    {error}
+                </div>
+            )}
+
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1 relative">
+                    <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b7c67]" />
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search villas..."
+                        className="admin-input pl-10"
+                    />
+                </div>
+                <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="admin-input w-48"
+                >
+                    {statusFilters.map((filter) => (
+                        <option key={filter.value} value={filter.value}>
+                            {filter.label}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            {/* Villa Grid */}
+            <div className="grid md:grid-cols-2 gap-6">
+                {filteredVillas.map((villa) => (
+                    <VillaCard
+                        key={villa.id}
+                        villa={villa}
+                        onEdit={() => handleEdit(villa)}
+                        onViewCalendar={() => handleViewCalendar(villa)}
+                        onDelete={() => handleDelete(villa)}
+                        onToggleStatus={() => handleToggleStatus(villa)}
+                    />
+                ))}
+            </div>
+
+            {filteredVillas.length === 0 && !isLoading && (
+                <div className="text-center py-12">
+                    <p className="text-[#6b7c67]">
+                        {villas.length === 0
+                            ? 'No villas found. Click "Add New Villa" to create one.'
+                            : 'No villas found matching your criteria.'}
+                    </p>
+                </div>
+            )}
+
+            {/* Edit Modal */}
+            <EditVillaModal
+                villa={selectedVilla}
+                isOpen={editModalOpen}
+                onClose={() => setEditModalOpen(false)}
+                onSave={handleSave}
+                isLoading={isSaving}
+            />
+        </div>
+    );
+};
+
+export default AdminVillas;
