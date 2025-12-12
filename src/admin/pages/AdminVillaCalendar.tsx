@@ -12,7 +12,6 @@ import {
     startOfMonth,
     endOfMonth,
     eachDayOfInterval,
-    isSameMonth,
     isToday,
     addMonths,
     subMonths,
@@ -21,12 +20,15 @@ import {
 } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
-import { Villa } from '@/types/villa'; // Assuming you have this type
-import { Booking } from '@/types/booking'; // Assuming you have this type
+import { Villa, Booking } from '@/lib/database.types'; // Corrected import
 
+// This is the type for the data we get back from the query
+type VillaWithBookedDates = Villa & {
+    villa_booked_dates: { booked_date: string }[];
+};
 
 const AdminVillaCalendar = () => {
-    const { id } = useParams();
+    const { id } = useParams<{ id: string }>(); // More specific type
     const [villa, setVilla] = useState<Villa | null>(null);
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [blockedDates, setBlockedDates] = useState<string[]>([]);
@@ -38,12 +40,14 @@ const AdminVillaCalendar = () => {
         if (!id) return;
         setIsLoading(true);
 
+        // Fetch villa data and joined blocked dates
         const { data: villaData, error: villaError } = await supabase
             .from('villas')
-            .select('*, blocked_dates(*)')
+            .select('*, villa_booked_dates(booked_date)') // Corrected table and column
             .eq('id', id)
             .single();
 
+        // Fetch bookings for this villa
         const { data: bookingsData, error: bookingsError } = await supabase
             .from('bookings')
             .select('*')
@@ -52,10 +56,13 @@ const AdminVillaCalendar = () => {
 
         if (villaError || bookingsError) {
             toast({ title: 'Error fetching data', description: villaError?.message || bookingsError?.message, variant: 'destructive' });
-        } else {
-            setVilla(villaData as Villa);
-            setBookings(bookingsData as Booking[]);
-            setBlockedDates(villaData.blocked_dates.map((d: any) => d.date));
+            setVilla(null);
+        } else if (villaData) {
+            const typedVillaData = villaData as VillaWithBookedDates; // Cast to our specific type
+            setVilla(typedVillaData);
+            setBookings(bookingsData || []);
+            // Extract the date strings from the joined data
+            setBlockedDates(typedVillaData.villa_booked_dates.map(d => d.booked_date));
         }
         setIsLoading(false);
     };
@@ -64,11 +71,13 @@ const AdminVillaCalendar = () => {
         fetchData();
     }, [id]);
 
+    // Calendar logic
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
     const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
     const startDayOffset = getDay(monthStart);
 
+    // Checkers
     const isDateBooked = (date: Date) => {
         const dateStr = format(date, 'yyyy-MM-dd');
         return bookings.some(b => dateStr >= b.check_in && dateStr < b.check_out);
@@ -79,12 +88,17 @@ const AdminVillaCalendar = () => {
         return bookings.find(b => dateStr >= b.check_in && dateStr < b.check_out);
     };
 
-    const isDateBlocked = (date: Date) => blockedDates.includes(format(date, 'yyyy-MM-dd'));
+    // A date is blocked if it's in our blockedDates list AND it's not part of a booking
+    const isDateBlocked = (date: Date) => {
+        const dateStr = format(date, 'yyyy-MM-dd');
+        return blockedDates.includes(dateStr) && !isDateBooked(date);
+    };
 
+    // Handlers
     const handleDateClick = (date: Date) => {
         const dateStr = format(date, 'yyyy-MM-dd');
         if (selectedDates.includes(dateStr)) {
-            setSelectedDates(selectedDates.filter((d) => d !== dateStr));
+            setSelectedDates(selectedDates.filter(d => d !== dateStr));
         } else {
             setSelectedDates([...selectedDates, dateStr]);
         }
@@ -93,8 +107,9 @@ const AdminVillaCalendar = () => {
     const handleBlockDates = async () => {
         if (!id || selectedDates.length === 0) return;
 
-        const records = selectedDates.map(date => ({ villa_id: id, date }));
-        const { error } = await supabase.from('blocked_dates').insert(records);
+        // Corrected table name and column name
+        const records = selectedDates.map(date => ({ villa_id: id, booked_date: date }));
+        const { error } = await supabase.from('villa_booked_dates').insert(records);
 
         if (error) {
             toast({ title: 'Error blocking dates', description: error.message, variant: 'destructive' });
@@ -108,7 +123,12 @@ const AdminVillaCalendar = () => {
     const handleUnblockDates = async () => {
         if (!id || selectedDates.length === 0) return;
 
-        const { error } = await supabase.from('blocked_dates').delete().eq('villa_id', id).in('date', selectedDates);
+        // Corrected table name and column name
+        const { error } = await supabase
+            .from('villa_booked_dates')
+            .delete()
+            .eq('villa_id', id)
+            .in('booked_date', selectedDates);
 
         if (error) {
             toast({ title: 'Error unblocking dates', description: error.message, variant: 'destructive' });
@@ -119,6 +139,7 @@ const AdminVillaCalendar = () => {
         }
     };
 
+    // Render logic
     if (isLoading) {
         return <div className="flex justify-center items-center h-64"><Loader2 className="animate-spin" size={48} /></div>;
     }
