@@ -1,126 +1,45 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, ChevronDown, HelpCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-
-// FAQ data organized by category
-const faqData = {
-    Booking: [
-        {
-            question: 'How do I book a villa?',
-            answer: 'You can book directly through our website by selecting your preferred villa, choosing your dates, and completing the checkout process. Alternatively, contact us via WhatsApp for personalized assistance.',
-        },
-        {
-            question: 'How far in advance should I book?',
-            answer: 'We recommend booking at least 2-4 weeks in advance, especially during peak seasons (July-August, December-January). Last-minute bookings are possible subject to availability.',
-        },
-        {
-            question: 'Can I modify my booking after confirmation?',
-            answer: 'Yes, you can modify your booking dates subject to availability. Please contact us at least 7 days before your check-in date. Modification fees may apply.',
-        },
-    ],
-    Payments: [
-        {
-            question: 'What payment methods do you accept?',
-            answer: 'We accept bank transfer (BCA, Mandiri), credit/debit cards (Visa, Mastercard), and Indonesian e-wallets including GoPay, OVO, and DANA.',
-        },
-        {
-            question: 'Is a deposit required?',
-            answer: 'Yes, we require a 50% deposit to confirm your booking. The remaining balance is due 7 days before check-in or upon arrival for last-minute bookings.',
-        },
-        {
-            question: 'Do you charge in USD or IDR?',
-            answer: 'All prices are displayed in IDR (Indonesian Rupiah). International guests can pay in their local currency; the conversion will be handled by your bank.',
-        },
-    ],
-    Policies: [
-        {
-            question: 'What is the cancellation policy?',
-            answer: 'Free cancellation up to 14 days before check-in. 50% refund for cancellations 7-14 days before. No refund for cancellations less than 7 days before check-in.',
-        },
-        {
-            question: 'What are the check-in and check-out times?',
-            answer: 'Standard check-in is 3:00 PM and check-out is 11:00 AM. Early check-in or late check-out may be arranged subject to availability (additional fees may apply).',
-        },
-        {
-            question: 'Are pets allowed?',
-            answer: 'We do not allow pets in our villas to ensure a comfortable stay for all guests and to maintain our properties.',
-        },
-    ],
-    Amenities: [
-        {
-            question: 'What amenities are included?',
-            answer: 'All villas include: private pool, fully equipped kitchen, AC, WiFi, daily housekeeping, welcome basket, toiletries, pool towels, and 24/7 concierge service.',
-        },
-        {
-            question: 'Is breakfast included?',
-            answer: 'A welcome breakfast basket is included on your first morning. Additional breakfast service can be arranged at an extra cost.',
-        },
-        {
-            question: 'Is there WiFi?',
-            answer: 'Yes, all villas have complimentary high-speed WiFi throughout the property.',
-        },
-    ],
-    Location: [
-        {
-            question: 'How far is the villa from Ubud center?',
-            answer: 'Our villas are located 5-15 minutes from Ubud center by car. Each villa page has specific location information.',
-        },
-        {
-            question: 'Is airport transfer available?',
-            answer: 'Yes, we offer airport pickup service for IDR 350,000 (up to 4 passengers). The drive from Ngurah Rai Airport to Ubud takes approximately 1.5 hours.',
-        },
-        {
-            question: 'Can you arrange tours and activities?',
-            answer: 'Absolutely! Our concierge team can arrange tours to temples, rice terraces, waterfalls, as well as cooking classes, spa treatments, and more.',
-        },
-    ],
-    General: [
-        {
-            question: 'Is the villa suitable for families with children?',
-            answer: 'Yes, our villas are family-friendly. We can provide baby cots, high chairs, and pool safety gates upon request. Please note that pools are not fenced by default.',
-        },
-        {
-            question: 'Can I extend my stay?',
-            answer: 'Subject to availability, you can extend your stay. Please contact us at least 24 hours before your scheduled check-out.',
-        },
-        {
-            question: 'Do you offer long-term stays?',
-            answer: 'Yes, we offer special rates for stays of 7 nights or longer. Contact us for a custom quote.',
-        },
-    ],
-};
-
-const categories = Object.keys(faqData);
+import { useFaqStore } from '@/store/faqStore';
 
 const FAQPage = () => {
+    const { faqs, fetchFaqs, isLoading } = useFaqStore();
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeCategory, setActiveCategory] = useState('Booking');
+    const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [openQuestion, setOpenQuestion] = useState<number | null>(null);
 
-    // Filter FAQs by search
-    const currentFaqs = faqData[activeCategory as keyof typeof faqData].filter(
+    useEffect(() => {
+        fetchFaqs();
+    }, [fetchFaqs]);
+
+    useEffect(() => {
+        if (faqs.length > 0 && !activeCategory) {
+            const categories = [...new Set(faqs.map(faq => faq.category))];
+            setActiveCategory(categories[0] || null);
+        }
+    }, [faqs, activeCategory]);
+
+    const categories = [...new Set(faqs.map(faq => faq.category))];
+
+    const currentFaqs = faqs.filter(
         (faq) =>
-            faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
+            faq.category === activeCategory &&
+            (faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                faq.answer.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
-    // Search across all categories
     const searchAllFaqs = () => {
         if (!searchQuery) return [];
-        const results: { category: string; question: string; answer: string }[] = [];
-        Object.entries(faqData).forEach(([category, faqs]) => {
-            faqs.forEach((faq) => {
-                if (
+        return faqs
+            .filter(
+                (faq) =>
                     faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
                     faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
-                ) {
-                    results.push({ category, ...faq });
-                }
-            });
-        });
-        return results;
+            )
+            .map((faq) => ({ ...faq }));
     };
 
     const searchResults = searchAllFaqs();
@@ -129,7 +48,6 @@ const FAQPage = () => {
         <div className="min-h-screen bg-[#F1F3E0]">
             <Navbar />
 
-            {/* Hero Section */}
             <section className="pt-24 pb-12 px-4">
                 <div className="max-w-4xl mx-auto text-center">
                     <h1 className="text-5xl font-serif font-bold text-[#2d3a29] mb-4">
@@ -138,7 +56,6 @@ const FAQPage = () => {
                     <p className="text-xl text-[#6b7c67] max-w-2xl mx-auto mb-8">
                         Find answers to common questions about our villas and services
                     </p>
-                    {/* Search Bar */}
                     <div className="relative max-w-xl mx-auto">
                         <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6b7c67]" />
                         <input
@@ -152,7 +69,6 @@ const FAQPage = () => {
                 </div>
             </section>
 
-            {/* Search Results */}
             {searchQuery && searchResults.length > 0 && (
                 <section className="px-4 pb-8">
                     <div className="max-w-4xl mx-auto">
@@ -174,11 +90,9 @@ const FAQPage = () => {
                 </section>
             )}
 
-            {/* Category Tabs and FAQ List */}
             {!searchQuery && (
                 <section className="py-8 px-4">
                     <div className="max-w-4xl mx-auto">
-                        {/* Category Tabs */}
                         <div className="flex flex-wrap gap-2 justify-center mb-8">
                             {categories.map((category) => (
                                 <button
@@ -197,34 +111,36 @@ const FAQPage = () => {
                             ))}
                         </div>
 
-                        {/* FAQ Accordion */}
                         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                            {currentFaqs.map((faq, index) => (
-                                <div key={index} className="border-b border-[#d4dbc8] last:border-b-0">
-                                    <button
-                                        onClick={() => setOpenQuestion(openQuestion === index ? null : index)}
-                                        className="w-full flex items-center justify-between p-6 text-left hover:bg-[#F1F3E0] transition-colors"
-                                    >
-                                        <span className="font-medium text-[#2d3a29] pr-4">{faq.question}</span>
-                                        <ChevronDown
-                                            size={20}
-                                            className={`text-[#778873] shrink-0 transition-transform ${openQuestion === index ? 'rotate-180' : ''
-                                                }`}
-                                        />
-                                    </button>
-                                    {openQuestion === index && (
-                                        <div className="px-6 pb-6 text-[#6b7c67] leading-relaxed animate-in slide-in-from-top-2">
-                                            {faq.answer}
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                            {isLoading ? (
+                                <p className="p-6 text-center">Loading FAQs...</p>
+                            ) : (
+                                currentFaqs.map((faq, index) => (
+                                    <div key={faq.id} className="border-b border-[#d4dbc8] last:border-b-0">
+                                        <button
+                                            onClick={() => setOpenQuestion(openQuestion === index ? null : index)}
+                                            className="w-full flex items-center justify-between p-6 text-left hover:bg-[#F1F3E0] transition-colors"
+                                        >
+                                            <span className="font-medium text-[#2d3a29] pr-4">{faq.question}</span>
+                                            <ChevronDown
+                                                size={20}
+                                                className={`text-[#778873] shrink-0 transition-transform ${openQuestion === index ? 'rotate-180' : ''
+                                                    }`}
+                                            />
+                                        </button>
+                                        {openQuestion === index && (
+                                            <div className="px-6 pb-6 text-[#6b7c67] leading-relaxed animate-in slide-in-from-top-2">
+                                                {faq.answer}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </section>
             )}
 
-            {/* Still Have Questions CTA */}
             <section className="py-16 px-4">
                 <div className="max-w-2xl mx-auto bg-[#2d3a29] rounded-2xl p-8 md:p-12 text-center">
                     <HelpCircle size={48} className="text-[#A1BC98] mx-auto mb-4" />
@@ -248,4 +164,4 @@ const FAQPage = () => {
     );
 };
 
-export default FAQPage;
+export default FAQPage;ぴ

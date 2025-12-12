@@ -1,196 +1,174 @@
--- Supabase SQL Schema for StayinUBUD Villa Booking
--- Run this in your Supabase SQL Editor (https://supabase.com/dashboard)
+-- =============================================
+-- DATABASE SETUP
+-- =============================================
 
--- =============================================
--- BOOKINGS TABLE (existing)
--- =============================================
-CREATE TABLE IF NOT EXISTS public.bookings (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  reference_number TEXT UNIQUE NOT NULL,
-  villa_id TEXT NOT NULL,
-  check_in DATE NOT NULL,
-  check_out DATE NOT NULL,
-  guests INTEGER DEFAULT 1,
-  total_price INTEGER NOT NULL,
-  status TEXT DEFAULT 'confirmed' CHECK (status IN ('pending', 'confirmed', 'completed', 'cancelled')),
-  payment_method TEXT,
-  special_requests TEXT,
-  guest_name TEXT NOT NULL,
-  guest_email TEXT NOT NULL,
-  guest_phone TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+-- ----------------------------------------------------------------
+-- 1. Create Tables
+-- ----------------------------------------------------------------
 
--- =============================================
--- ADMIN USERS TABLE (custom auth)
--- =============================================
-CREATE TABLE IF NOT EXISTS public.admin_users (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  name TEXT NOT NULL,
-  role TEXT DEFAULT 'admin' CHECK (role IN ('super_admin', 'admin', 'editor')),
-  avatar_url TEXT,
-  is_active BOOLEAN DEFAULT true,
-  last_login TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Insert default admin user (password: admin123)
--- Note: In production, use proper password hashing
-INSERT INTO public.admin_users (email, password_hash, name, role)
-VALUES ('admin@stayinubud.com', 'admin123', 'Super Admin', 'super_admin')
-ON CONFLICT (email) DO NOTHING;
-
--- =============================================
--- VILLAS TABLE
--- =============================================
+-- public.villas
 CREATE TABLE IF NOT EXISTS public.villas (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name TEXT NOT NULL,
-  tagline TEXT,
-  description TEXT,
-  short_description TEXT,
-  price_per_night INTEGER NOT NULL,
-  capacity INTEGER DEFAULT 2,
-  bedrooms INTEGER DEFAULT 1,
-  bathrooms INTEGER DEFAULT 1,
-  images TEXT[] DEFAULT '{}',
-  amenities TEXT[] DEFAULT '{}',
-  is_available BOOLEAN DEFAULT true,
-  rating DECIMAL(2,1) DEFAULT 5.0,
-  review_count INTEGER DEFAULT 0,
-  location TEXT,
-  coordinates JSONB DEFAULT '{"lat": 0, "lng": 0}',
-  cleaning_fee INTEGER DEFAULT 0,
-  service_fee INTEGER DEFAULT 0,
-  minimum_stay INTEGER DEFAULT 1,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    tagline TEXT,
+    description TEXT,
+    short_description TEXT,
+    price_per_night NUMERIC(10, 2) NOT NULL,
+    capacity INT NOT NULL,
+    bedrooms INT NOT NULL,
+    bathrooms INT NOT NULL,
+    images TEXT[],
+    amenities TEXT[],
+    rating NUMERIC(3, 2),
+    review_count INT,
+    location TEXT,
+    cleaning_fee NUMERIC(10, 2) DEFAULT 0,
+    service_fee NUMERIC(10, 2) DEFAULT 0,
+    minimum_stay INT DEFAULT 1,
+    is_available BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- =============================================
--- VILLA BOOKED DATES TABLE
--- =============================================
-CREATE TABLE IF NOT EXISTS public.villa_booked_dates (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  villa_id UUID REFERENCES public.villas(id) ON DELETE CASCADE,
-  booked_date DATE NOT NULL,
-  booking_id UUID REFERENCES public.bookings(id) ON DELETE SET NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(villa_id, booked_date)
+-- public.bookings
+CREATE TABLE IF NOT EXISTS public.bookings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    reference_number TEXT UNIQUE NOT NULL,
+    villa_id UUID REFERENCES public.villas(id),
+    check_in DATE NOT NULL,
+    check_out DATE NOT NULL,
+    guests INT NOT NULL,
+    total_price NUMERIC(10, 2) NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('pending', 'confirmed', 'completed', 'cancelled')),
+    payment_method TEXT,
+    special_requests TEXT,
+    guest_name TEXT NOT NULL,
+    guest_email TEXT NOT NULL,
+    guest_phone TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- =============================================
--- BLOG CATEGORIES TABLE
--- =============================================
-CREATE TABLE IF NOT EXISTS public.blog_categories (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name TEXT NOT NULL,
-  slug TEXT UNIQUE NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Insert default categories
-INSERT INTO public.blog_categories (name, slug) VALUES
-  ('Travel Tips', 'travel-tips'),
-  ('Culture', 'culture'),
-  ('Food & Dining', 'food-dining'),
-  ('Activities', 'activities'),
-  ('Wellness', 'wellness')
-ON CONFLICT (slug) DO NOTHING;
-
--- =============================================
--- BLOG POSTS TABLE
--- =============================================
+-- public.blog_posts
 CREATE TABLE IF NOT EXISTS public.blog_posts (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  title TEXT NOT NULL,
-  slug TEXT UNIQUE NOT NULL,
-  excerpt TEXT,
-  content TEXT,
-  featured_image TEXT,
-  author_id UUID REFERENCES public.admin_users(id),
-  author_name TEXT,
-  category_id UUID REFERENCES public.blog_categories(id),
-  tags TEXT[] DEFAULT '{}',
-  status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'scheduled')),
-  published_at TIMESTAMPTZ,
-  views INTEGER DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    slug TEXT UNIQUE NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT,
+    author TEXT,
+    image_url TEXT,
+    tags TEXT[],
+    is_published BOOLEAN DEFAULT FALSE,
+    published_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- =============================================
--- GALLERY IMAGES TABLE
--- =============================================
-CREATE TABLE IF NOT EXISTS public.gallery_images (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  title TEXT,
-  description TEXT,
-  image_url TEXT NOT NULL,
-  category TEXT DEFAULT 'general',
-  villa_id UUID REFERENCES public.villas(id) ON DELETE SET NULL,
-  sort_order INTEGER DEFAULT 0,
-  is_featured BOOLEAN DEFAULT false,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- =============================================
--- TESTIMONIALS TABLE
--- =============================================
+-- public.testimonials
 CREATE TABLE IF NOT EXISTS public.testimonials (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  guest_name TEXT NOT NULL,
-  guest_country TEXT,
-  guest_avatar TEXT,
-  villa_id UUID REFERENCES public.villas(id) ON DELETE SET NULL,
-  villa_name TEXT,
-  rating INTEGER DEFAULT 5 CHECK (rating >= 1 AND rating <= 5),
-  review TEXT,
-  ratings JSONB DEFAULT '{}',
-  host_response TEXT,
-  is_featured BOOLEAN DEFAULT false,
-  review_date DATE DEFAULT CURRENT_DATE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    author_name TEXT NOT NULL,
+    author_location TEXT,
+    author_avatar_url TEXT,
+    rating NUMERIC(2, 1) NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    content TEXT NOT NULL,
+    is_approved BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- =============================================
--- OFFERS TABLE
--- =============================================
+-- public.gallery_items
+CREATE TABLE IF NOT EXISTS public.gallery_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    image_url TEXT NOT NULL,
+    caption TEXT,
+    category TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- public.offers
 CREATE TABLE IF NOT EXISTS public.offers (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  title TEXT NOT NULL,
-  description TEXT,
-  banner_image TEXT,
-  discount_type TEXT DEFAULT 'percentage' CHECK (discount_type IN ('percentage', 'fixed')),
-  discount_value INTEGER NOT NULL,
-  promo_code TEXT UNIQUE,
-  start_date DATE,
-  end_date DATE,
-  applicable_villas UUID[] DEFAULT '{}',
-  minimum_nights INTEGER DEFAULT 1,
-  max_uses INTEGER,
-  current_uses INTEGER DEFAULT 0,
-  terms TEXT,
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    description TEXT,
+    discount_code TEXT UNIQUE,
+    discount_percentage NUMERIC(5, 2),
+    valid_from DATE,
+    valid_to DATE,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- =============================================
--- SETTINGS TABLE
--- =============================================
+-- public.settings
 CREATE TABLE IF NOT EXISTS public.settings (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  key TEXT UNIQUE NOT NULL,
-  value JSONB NOT NULL,
-  category TEXT DEFAULT 'general',
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    key TEXT UNIQUE NOT NULL,
+    value JSONB,
+    category TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Insert default settings
+-- public.admin_users
+CREATE TABLE IF NOT EXISTS public.admin_users (
+    id UUID PRIMARY KEY REFERENCES auth.users(id),
+    full_name TEXT,
+    avatar_url TEXT,
+    role TEXT DEFAULT 'editor',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- public.contact_submissions
+CREATE TABLE IF NOT EXISTS public.contact_submissions (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    full_name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    subject TEXT,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- public.faqs
+CREATE TABLE IF NOT EXISTS public.faqs (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    category TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+
+-- ----------------------------------------------------------------
+-- 2. Create Functions & Triggers
+-- ----------------------------------------------------------------
+
+-- Function to generate a unique booking reference number
+CREATE OR REPLACE FUNCTION generate_reference_number()
+RETURNS TEXT AS $$
+DECLARE
+    new_ref TEXT;
+BEGIN
+    LOOP
+        new_ref := 'SIU-' || to_char(NOW(), 'YYMMDD') || '-' || upper(substr(md5(random()::text), 1, 6));
+        IF NOT EXISTS (SELECT 1 FROM public.bookings WHERE reference_number = new_ref) THEN
+            RETURN new_ref;
+        END IF;
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Set default reference number on new booking
+ALTER TABLE public.bookings
+ALTER COLUMN reference_number SET DEFAULT generate_reference_number();
+
+
+-- ----------------------------------------------------------------
+-- 3. Seed Data (Optional)
+-- ----------------------------------------------------------------
+
+-- Note: Seeding is optional and can be managed via the admin panel.
+-- This is just for initial setup.
+
+-- Clear existing data before seeding
+-- TRUNCATE TABLE public.villas, public.bookings, public.blog_posts, public.testimonials, public.gallery_items, public.offers, public.settings RESTART IDENTITY CASCADE;
+
+-- Seed settings
 INSERT INTO public.settings (key, value, category) VALUES
   ('site_name', '"StayinUBUD"', 'general'),
   ('site_tagline', '"Luxury Villa Rentals in Ubud, Bali"', 'general'),
@@ -206,104 +184,119 @@ INSERT INTO public.settings (key, value, category) VALUES
   ('social_facebook', '"https://facebook.com/stayinubud"', 'social')
 ON CONFLICT (key) DO NOTHING;
 
--- =============================================
--- ROW LEVEL SECURITY POLICIES
--- =============================================
-
--- Enable RLS on all tables
-ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.villas ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.villa_booked_dates ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.blog_categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.gallery_images ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.testimonials ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.offers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
-
--- Public read access for most tables
-CREATE POLICY "Public read villas" ON public.villas FOR SELECT USING (true);
-CREATE POLICY "Public read blog_posts" ON public.blog_posts FOR SELECT USING (status = 'published');
-CREATE POLICY "Public read blog_categories" ON public.blog_categories FOR SELECT USING (true);
-CREATE POLICY "Public read gallery_images" ON public.gallery_images FOR SELECT USING (true);
-CREATE POLICY "Public read testimonials" ON public.testimonials FOR SELECT USING (true);
-CREATE POLICY "Public read active offers" ON public.offers FOR SELECT USING (is_active = true);
-CREATE POLICY "Public read settings" ON public.settings FOR SELECT USING (true);
-
--- Bookings policies (guest checkout)
-CREATE POLICY "Anyone can create bookings" ON public.bookings FOR INSERT WITH CHECK (true);
-CREATE POLICY "Anyone can view bookings" ON public.bookings FOR SELECT USING (true);
-CREATE POLICY "Anyone can update bookings" ON public.bookings FOR UPDATE USING (true);
-
--- Admin users policy (for login check)
-CREATE POLICY "Public read admin_users" ON public.admin_users FOR SELECT USING (true);
-
--- Full access policies for admin operations (via service role key in production)
-CREATE POLICY "Full access villas" ON public.villas FOR ALL USING (true);
-CREATE POLICY "Full access blog_posts" ON public.blog_posts FOR ALL USING (true);
-CREATE POLICY "Full access blog_categories" ON public.blog_categories FOR ALL USING (true);
-CREATE POLICY "Full access gallery_images" ON public.gallery_images FOR ALL USING (true);
-CREATE POLICY "Full access testimonials" ON public.testimonials FOR ALL USING (true);
-CREATE POLICY "Full access offers" ON public.offers FOR ALL USING (true);
-CREATE POLICY "Full access settings" ON public.settings FOR ALL USING (true);
-CREATE POLICY "Full access villa_booked_dates" ON public.villa_booked_dates FOR ALL USING (true);
-
--- =============================================
--- INDEXES
--- =============================================
-CREATE INDEX IF NOT EXISTS idx_bookings_guest_email ON public.bookings(guest_email);
-CREATE INDEX IF NOT EXISTS idx_bookings_reference_number ON public.bookings(reference_number);
-CREATE INDEX IF NOT EXISTS idx_villas_is_available ON public.villas(is_available);
-CREATE INDEX IF NOT EXISTS idx_blog_posts_status ON public.blog_posts(status);
-CREATE INDEX IF NOT EXISTS idx_blog_posts_slug ON public.blog_posts(slug);
-CREATE INDEX IF NOT EXISTS idx_offers_promo_code ON public.offers(promo_code);
-CREATE INDEX IF NOT EXISTS idx_villa_booked_dates_villa ON public.villa_booked_dates(villa_id);
-
--- =============================================
--- FUNCTIONS
--- =============================================
-
--- Function to update updated_at timestamp
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Triggers for updated_at
-CREATE TRIGGER update_villas_updated_at BEFORE UPDATE ON public.villas
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_blog_posts_updated_at BEFORE UPDATE ON public.blog_posts
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_offers_updated_at BEFORE UPDATE ON public.offers
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_admin_users_updated_at BEFORE UPDATE ON public.admin_users
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- =============================================
--- STORAGE BUCKETS (If supported by editor, else run in dashboard)
--- =============================================
--- Create 'images' bucket
-INSERT INTO storage.buckets (id, name, public) 
-VALUES ('images', 'images', true)
+-- Seed FAQs
+INSERT INTO public.faqs (question, answer, category) VALUES
+    ('What are the check-in and check-out times?', 'Check-in is at 2:00 PM and check-out is at 12:00 PM (noon). Early check-in or late check-out may be available upon request for an additional fee, subject to availability.', 'General'),
+    ('Is airport transfer included?', 'Airport transfer is not included in the standard rate, but we can arrange a private car for you at an additional cost. Please contact us with your flight details to book.', 'General'),
+    ('Are pets allowed?', 'Unfortunately, to ensure the comfort and safety of all our guests, we do not allow pets in the villas.', 'General'),
+    ('What payment methods do you accept?', 'We accept bank transfer (BCA, Mandiri), credit/debit cards (Visa, Mastercard), and Indonesian e-wallets including GoPay, OVO, and DANA.', 'Payments'),
+    ('Is a deposit required?', 'Yes, we require a 50% deposit to confirm your booking. The remaining balance is due 7 days before check-in or upon arrival for last-minute bookings.', 'Payments'),
+    ('Do you charge in USD or IDR?', 'All prices are displayed in IDR (Indonesian Rupiah). International guests can pay in their local currency; the conversion will be handled by your bank.', 'Payments'),
+    ('What is the cancellation policy?', 'Bookings cancelled more than 30 days before check-in receive a full refund. Cancellations between 7-30 days receive a 50% refund. Cancellations less than 7 days before check-in are non-refundable.', 'Policies'),
+    ('Is smoking allowed in the villas?', 'Smoking is strictly prohibited inside all enclosed areas of the villa. Guests are welcome to smoke in designated outdoor areas.', 'Policies')
 ON CONFLICT (id) DO NOTHING;
 
--- Storage Rules (Allow public read, authenticated insert)
-CREATE POLICY "Public Access"
-  ON storage.objects FOR SELECT
-  USING ( bucket_id = 'images' );
 
-CREATE POLICY "Auth Upload"
-  ON storage.objects FOR INSERT
-  WITH CHECK ( bucket_id = 'images' ); 
-  -- In production, add: AND auth.role() = 'authenticated'
+-- ----------------------------------------------------------------
+-- 4. Row Level Security (RLS)
+-- ----------------------------------------------------------------
 
-CREATE POLICY "Auth Delete"
-  ON storage.objects FOR DELETE
-  USING ( bucket_id = 'images' );
+-- Enable RLS for all tables
+ALTER TABLE public.villas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.testimonials ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.gallery_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.offers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contact_submissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.faqs ENABLE ROW LEVEL SECURITY;
+
+
+-- ----------------------------------------------------------------
+-- 5. RLS Policies
+-- ----------------------------------------------------------------
+
+-- Function to check if a user is an admin
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1
+        FROM public.admin_users
+        WHERE id = auth.uid()
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
+-- Policies for public access (Read-only)
+DROP POLICY IF EXISTS "Public can read published/approved content" ON public.villas;
+CREATE POLICY "Public can read published/approved content" ON public.villas FOR SELECT USING (is_available = TRUE);
+
+DROP POLICY IF EXISTS "Public can read published/approved content" ON public.blog_posts;
+CREATE POLICY "Public can read published/approved content" ON public.blog_posts FOR SELECT USING (is_published = TRUE);
+
+DROP POLICY IF EXISTS "Public can read published/approved content" ON public.testimonials;
+CREATE POLICY "Public can read published/approved content" ON public.testimonials FOR SELECT USING (is_approved = TRUE);
+
+DROP POLICY IF EXISTS "Public can read published/approved content" ON public.gallery_items;
+CREATE POLICY "Public can read published/approved content" ON public.gallery_items FOR SELECT USING (TRUE);
+
+DROP POLICY IF EXISTS "Public can read published/approved content" ON public.offers;
+CREATE POLICY "Public can read published/approved content" ON public.offers FOR SELECT USING (is_active = TRUE AND valid_to >= NOW());
+
+DROP POLICY IF EXISTS "Public can read published/approved content" ON public.settings;
+CREATE POLICY "Public can read published/approved content" ON public.settings FOR SELECT USING (TRUE);
+
+DROP POLICY IF EXISTS "Public can read published/approved content" ON public.faqs;
+CREATE POLICY "Public can read published/approved content" ON public.faqs FOR SELECT USING (TRUE);
+
+
+-- Policies for admin access (Full access)
+DROP POLICY IF EXISTS "Admins have full access" ON public.villas;
+CREATE POLICY "Admins have full access" ON public.villas FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admins have full access" ON public.bookings;
+CREATE POLICY "Admins have full access" ON public.bookings FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admins have full access" ON public.blog_posts;
+CREATE POLICY "Admins have full access" ON public.blog_posts FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admins have full access" ON public.testimonials;
+CREATE POLICY "Admins have full access" ON public.testimonials FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admins have full access" ON public.gallery_items;
+CREATE POLICY "Admins have full access" ON public.gallery_items FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admins have full access" ON public.offers;
+CREATE POLICY "Admins have full access" ON public.offers FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admins have full access" ON public.settings;
+CREATE POLICY "Admins have full access" ON public.settings FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admins have full access" ON public.admin_users;
+CREATE POLICY "Admins have full access" ON public.admin_users FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admins have full access" ON public.contact_submissions;
+CREATE POLICY "Admins have full access" ON public.contact_submissions FOR ALL USING (is_admin());
+
+DROP POLICY IF EXISTS "Admins have full access" ON public.faqs;
+CREATE POLICY "Admins have full access" ON public.faqs FOR ALL USING (is_admin());
+
+
+-- Policies for specific actions
+-- Allow users to see their own bookings
+DROP POLICY IF EXISTS "Users can view their own bookings" ON public.bookings;
+CREATE POLICY "Users can view their own bookings" ON public.bookings
+  FOR SELECT
+  USING (auth.jwt()->>'email' = guest_email);
+
+-- Allow public to create contact submissions
+DROP POLICY IF EXISTS "Public can create contact submissions" ON public.contact_submissions;
+CREATE POLICY "Public can create contact submissions" ON public.contact_submissions FOR INSERT WITH CHECK (TRUE);
+
+-- Allow authenticated users to create bookings
+DROP POLICY IF EXISTS "Authenticated users can create bookings" ON public.bookings;
+CREATE POLICY "Authenticated users can create bookings" ON public.bookings FOR INSERT WITH CHECK (auth.role() = 'authenticated');

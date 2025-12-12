@@ -11,6 +11,7 @@ import {
     X,
     Quote,
     Image,
+    HelpCircle,
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -26,6 +27,7 @@ const navItems = [
     { path: '/admin/blog', label: 'Blog Posts', icon: FileText },
     { path: '/admin/testimonials', label: 'Testimonials', icon: Quote },
     { path: '/admin/gallery', label: 'Gallery', icon: Image },
+    { path: '/admin/faqs', label: 'FAQs', icon: HelpCircle },
     { path: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
     { path: '/admin/users', label: 'Admin Users', icon: Users },
     { path: '/admin/settings', label: 'Settings', icon: Settings },
