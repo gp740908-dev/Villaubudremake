@@ -550,3 +550,145 @@ const AdminVillas = () => {
         })
         setIsSaving(false)
         
+  }
+
+  const handleDelete = async (villa: Villa) => {
+    setVillaToDelete(villa)
+    setDeleteConfirmOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!villaToDelete) return
+
+    const success = await deleteVilla(villaToDelete.id)
+    if (success) {
+      toast({
+        title: "Villa deleted",
+        description: `${villaToDelete.name} has been removed.`,
+      })
+    } else {
+      toast({
+        title: "Delete failed",
+        description: error || "Failed to delete villa",
+        variant: "destructive",
+      })
+    }
+    setDeleteConfirmOpen(false)
+    setVillaToDelete(null)
+  }
+
+  if (isLoading && villas.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 size={32} className="animate-spin text-[#778873]" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-[#2d3a29]">Villa Management</h1>
+          <p className="text-sm text-[#6b7c67]">Manage your villa properties ({villas.length} villas)</p>
+        </div>
+        <button onClick={handleAddVilla} className="admin-btn admin-btn-primary">
+          <Plus size={18} />
+          Add New Villa
+        </button>
+      </div>
+
+      {error && <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">{error}</div>}
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1 relative">
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b7c67]" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search villas..."
+            className="admin-input pl-10"
+          />
+        </div>
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="admin-input w-48">
+          {statusFilters.map((filter) => (
+            <option key={filter.value} value={filter.value}>
+              {filter.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Villa Grid */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {filteredVillas.map((villa) => (
+          <VillaCard
+            key={villa.id}
+            villa={villa}
+            onEdit={() => handleEditVilla(villa)}
+            onViewCalendar={() => handleViewCalendar(villa)}
+            onDelete={() => handleDelete(villa)}
+            onToggleStatus={() => handleToggleStatus(villa)}
+          />
+        ))}
+      </div>
+
+      {filteredVillas.length === 0 && !isLoading && (
+        <div className="text-center py-12">
+          <p className="text-[#6b7c67]">
+            {villas.length === 0
+              ? 'No villas found. Click "Add New Villa" to create one.'
+              : "No villas found matching your criteria."}
+          </p>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      <EditVillaModal
+        villa={selectedVilla}
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        onSave={handleSave}
+        isLoading={isSaving}
+      />
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-2xl w-full max-w-sm max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="p-6 border-b border-[#d4dbc8] flex items-center justify-between">
+              <h2 className="text-xl font-bold text-[#2d3a29]">Confirm Deletion</h2>
+              <button onClick={() => setDeleteConfirmOpen(false)} className="p-2 hover:bg-[#F1F3E0] rounded-lg">
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <p className="text-sm text-[#6b7c67]">
+                Are you sure you want to delete "{villaToDelete?.name || "this villa"}"?
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-[#d4dbc8] flex justify-end gap-3">
+              <button onClick={() => setDeleteConfirmOpen(false)} className="admin-btn admin-btn-outline">
+                Cancel
+              </button>
+              <button onClick={confirmDelete} className="admin-btn admin-btn-primary">
+                Delete Villa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default AdminVillas
+        
