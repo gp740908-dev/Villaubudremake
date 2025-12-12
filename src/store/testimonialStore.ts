@@ -8,6 +8,7 @@ interface TestimonialState {
     error: string | null;
 
     fetchTestimonials: () => Promise<void>;
+    fetchTestimonialsByVilla: (villaId: string) => Promise<Testimonial[]>; // New function
     createTestimonial: (testimonial: Omit<Testimonial, 'id' | 'created_at'>) => Promise<Testimonial | null>;
     updateTestimonial: (id: string, updates: Partial<Testimonial>) => Promise<boolean>;
     deleteTestimonial: (id: string) => Promise<boolean>;
@@ -21,15 +22,12 @@ export const useTestimonialStore = create<TestimonialState>((set, get) => ({
 
     fetchTestimonials: async () => {
         set({ isLoading: true, error: null });
-
         try {
             const { data, error } = await supabase
                 .from('testimonials')
                 .select('*')
                 .order('created_at', { ascending: false });
-
             if (error) throw error;
-
             set({ testimonials: data as Testimonial[], isLoading: false });
         } catch (err) {
             console.error('Error fetching testimonials:', err);
@@ -37,9 +35,30 @@ export const useTestimonialStore = create<TestimonialState>((set, get) => ({
         }
     },
 
+    fetchTestimonialsByVilla: async (villaId: string) => {
+        set({ isLoading: true, error: null });
+        try {
+            const { data, error } = await supabase
+                .from('testimonials')
+                .select('*')
+                .eq('villa_id', villaId)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            
+            // This function just returns the data, doesn't need to set it in global state
+            // as it's for a specific context.
+            set({ isLoading: false });
+            return (data || []) as Testimonial[];
+        } catch (err: any) {
+            console.error(`Error fetching testimonials for villa ${villaId}:`, err);
+            set({ isLoading: false, error: `Failed to fetch testimonials: ${err.message}` });
+            return [];
+        }
+    },
+
     createTestimonial: async (testimonial) => {
         set({ isLoading: true, error: null });
-
         try {
             const { data, error } = await supabase
                 .from('testimonials')
@@ -61,17 +80,18 @@ export const useTestimonialStore = create<TestimonialState>((set, get) => ({
 
     updateTestimonial: async (id, updates) => {
         set({ isLoading: true, error: null });
-
         try {
-            const { error } = await supabase
+            const { error, data } = await supabase
                 .from('testimonials')
                 .update(updates)
-                .eq('id', id);
+                .eq('id', id)
+                .select()
+                .single();
 
             if (error) throw error;
 
             set(state => ({
-                testimonials: state.testimonials.map(t => t.id === id ? { ...t, ...updates } : t),
+                testimonials: state.testimonials.map(t => t.id === id ? data as Testimonial : t),
                 isLoading: false
             }));
             return true;
@@ -84,7 +104,6 @@ export const useTestimonialStore = create<TestimonialState>((set, get) => ({
 
     deleteTestimonial: async (id) => {
         set({ isLoading: true, error: null });
-
         try {
             const { error } = await supabase
                 .from('testimonials')

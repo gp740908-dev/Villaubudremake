@@ -1,136 +1,171 @@
-import { create } from "zustand"
-import { persist } from "zustand/middleware"
-import { supabase, type DbBooking } from "@/lib/supabase"
-import { eachDayOfInterval, parseISO, format, addDays } from "date-fns"
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { supabase, type DbBooking } from "@/lib/supabase";
+import { eachDayOfInterval, parseISO, format, addDays } from "date-fns";
 
+// --- INTERFACES ---
 export interface BookingData {
-  villaId: string
-  villaName: string
-  villaImage: string
-  checkIn: Date | null
-  checkOut: Date | null
-  guests: number
-  nightlyRate: number
-  nights: number
-  cleaningFee: number
-  serviceFee: number
-  total: number
+  villaId: string;
+  villaName: string;
+  villaImage: string;
+  checkIn: Date | null;
+  checkOut: Date | null;
+  guests: number;
+  nightlyRate: number;
+  nights: number;
+  cleaningFee: number;
+  serviceFee: number;
+  total: number;
 }
 
 export interface GuestDetails {
-  fullName: string
-  email: string
-  whatsapp: string
-  specialRequests: string
-  country: string
-  idType: string
-  idNumber: string
-  arrivalTime: string
+  fullName: string;
+  email: string;
+  whatsapp: string;
+  specialRequests: string;
+  country: string;
+  idType: string;
+  idNumber: string;
+  arrivalTime: string;
 }
 
 export interface CompletedBooking {
-  id: string
-  referenceNumber: string
-  villaId: string
-  villaName: string
-  villaImage: string
-  checkIn: string
-  checkOut: string
-  guests: number
-  nights: number
-  basePrice: number
-  cleaningFee: number
-  serviceFee: number
-  discountAmount: number
-  discountCode: string | null
-  total: number
-  status: "confirmed" | "pending" | "completed" | "cancelled"
-  paymentStatus: "paid" | "pending" | "failed"
-  guestDetails: GuestDetails
-  paymentMethod: string
-  createdAt: string
+  id: string;
+  referenceNumber: string;
+  villaId: string;
+  villaName: string;
+  villaImage: string;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  nights: number;
+  basePrice: number;
+  cleaningFee: number;
+  serviceFee: number;
+  discountAmount: number;
+  discountCode: string | null;
+  total: number;
+  status: "confirmed" | "pending" | "completed" | "cancelled";
+  paymentStatus: "paid" | "pending" | "failed";
+  guestDetails: GuestDetails;
+  paymentMethod: string;
+  createdAt: string;
 }
 
 interface BookingState {
-  booking: BookingData | null
-  guestDetails: GuestDetails | null
-  completedBookings: CompletedBooking[]
-  globalBookedDates: Record<string, string[]>
-  isLoading: boolean
-  error: string | null
-  setBooking: (booking: BookingData | null) => void
-  setGuestDetails: (details: GuestDetails) => void
-  clearBooking: () => void
-  addCompletedBooking: (booking: CompletedBooking) => void
-  cancelBooking: (bookingId: string) => void
-  addBookedDates: (villaId: string, dates: string[]) => void
-  isDateGloballyBooked: (villaId: string, date: string) => boolean
-  // Supabase functions
-  saveBookingToSupabase: (booking: CompletedBooking) => Promise<{ success: boolean; error?: string }>
-  fetchBookingsByEmail: (email: string) => Promise<CompletedBooking[]>
-  fetchBookingByReference: (reference: string) => Promise<CompletedBooking | null>
-  cancelBookingInSupabase: (bookingId: string) => Promise<{ success: boolean; error?: string }>
-  fetchAllBookedDates: () => Promise<void>
-  adminBookings: CompletedBooking[]
-  fetchAllBookings: () => Promise<void>
-  updateBookingStatus: (
-    bookingId: string,
-    status: "pending" | "confirmed" | "completed" | "cancelled",
-  ) => Promise<{ success: boolean; error?: string }>
+  booking: BookingData | null;
+  guestDetails: GuestDetails | null;
+  globalBookedDates: Record<string, string[]>; // VillaId -> ['YYYY-MM-DD']
+  isLoading: boolean;
+  error: string | null;
+
+  // Local state management
+  setBooking: (booking: BookingData | null) => void;
+  setGuestDetails: (details: GuestDetails) => void;
+  clearBooking: () => void;
+  fetchAndSetGlobalBookedDates: () => Promise<void>;
+  isDateGloballyBooked: (villaId: string, date: string) => boolean;
+
+  // Supabase interactions
+  saveBooking: (bookingData: CompletedBooking) => Promise<{ success: boolean; error?: string }>;
+  fetchGuestBookings: (email: string) => Promise<CompletedBooking[]>;
+  fetchBookingByReference: (reference: string) => Promise<CompletedBooking | null>;
+  cancelBooking: (bookingId: string) => Promise<{ success: boolean; error?: string }>;
+  
+  // Admin functions
+  adminBookings: CompletedBooking[];
+  fetchAllAdminBookings: () => Promise<void>;
+  updateBookingStatus: (bookingId: string, status: CompletedBooking['status']) => Promise<{ success: boolean; error?: string }>;
 }
 
+// --- UTILITY FUNCTIONS ---
 const generateReferenceNumber = (): string => {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-  let result = "SU-"
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "SU-";
   for (let i = 0; i < 8; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  return result
-}
+  return result;
+};
 
+// Helper to map DB booking to app's CompletedBooking format, including Villa details
+const mapDbBookingToCompletedBooking = (dbBooking: any): CompletedBooking => {
+  const villaName = dbBooking.villas?.name || "Unknown Villa";
+  const villaImage = dbBooking.villas?.images?.[0] || "";
+
+  return {
+    id: dbBooking.id,
+    referenceNumber: dbBooking.reference_number,
+    villaId: dbBooking.villa_id,
+    villaName,
+    villaImage,
+    checkIn: dbBooking.check_in,
+    checkOut: dbBooking.check_out,
+    guests: dbBooking.guests,
+    nights: dbBooking.nights,
+    basePrice: dbBooking.base_price || 0,
+    cleaningFee: dbBooking.cleaning_fee || 0,
+    serviceFee: dbBooking.service_fee || 0,
+    discountAmount: dbBooking.discount_amount || 0,
+    discountCode: dbBooking.discount_code,
+    total: dbBooking.total_price,
+    status: dbBooking.status,
+    paymentStatus: dbBooking.payment_status,
+    paymentMethod: dbBooking.payment_method || "",
+    createdAt: dbBooking.created_at,
+    guestDetails: {
+      fullName: dbBooking.guest_name,
+      email: dbBooking.guest_email,
+      whatsapp: dbBooking.guest_phone || "",
+      specialRequests: dbBooking.special_requests || "",
+      country: dbBooking.guest_country || "",
+      idType: dbBooking.guest_id_type || "",
+      idNumber: dbBooking.guest_id_number || "",
+      arrivalTime: dbBooking.arrival_time || "",
+    },
+  };
+};
+
+// --- ZUSTAND STORE ---
 export const useBookingStore = create<BookingState>()(
   persist(
     (set, get) => ({
       booking: null,
       guestDetails: null,
-      completedBookings: [],
       globalBookedDates: {},
       isLoading: false,
       error: null,
+      adminBookings: [],
 
       setBooking: (booking) => set({ booking }),
       setGuestDetails: (details) => set({ guestDetails: details }),
       clearBooking: () => set({ booking: null, guestDetails: null }),
 
-      addCompletedBooking: (booking) =>
-        set((state) => ({
-          completedBookings: [...state.completedBookings, booking],
-        })),
+      fetchAndSetGlobalBookedDates: async () => {
+        try {
+          const { data, error } = await supabase.from("villa_booked_dates").select("villa_id, booked_date").eq('status', 'booked');
+          if (error) throw error;
 
-      cancelBooking: (bookingId) =>
-        set((state) => ({
-          completedBookings: state.completedBookings.map((b) =>
-            b.id === bookingId ? { ...b, status: "cancelled" as const } : b,
-          ),
-        })),
+          const datesMap: Record<string, string[]> = (data || []).reduce((acc, item) => {
+            if (!acc[item.villa_id]) acc[item.villa_id] = [];
+            acc[item.villa_id].push(item.booked_date);
+            return acc;
+          }, {});
 
-      addBookedDates: (villaId, dates) =>
-        set((state) => ({
-          globalBookedDates: {
-            ...state.globalBookedDates,
-            [villaId]: [...(state.globalBookedDates[villaId] || []), ...dates],
-          },
-        })),
-
-      isDateGloballyBooked: (villaId, date) => {
-        const state = get()
-        return state.globalBookedDates[villaId]?.includes(date) || false
+          set({ globalBookedDates: datesMap });
+        } catch (error) {
+          console.error("Error fetching global booked dates:", error);
+        }
       },
 
-      saveBookingToSupabase: async (booking) => {
-        set({ isLoading: true, error: null })
+      isDateGloballyBooked: (villaId, date) => get().globalBookedDates[villaId]?.includes(date) || false,
+
+      saveBooking: async (booking) => {
+        set({ isLoading: true, error: null });
         try {
+          const { guestDetails, ...bookingCore } = booking;
           const bookingToInsert = {
+            ...guestDetails,
             id: booking.id,
             reference_number: booking.referenceNumber,
             villa_id: booking.villaId,
@@ -147,7 +182,6 @@ export const useBookingStore = create<BookingState>()(
             status: booking.status,
             payment_status: booking.paymentStatus,
             payment_method: booking.paymentMethod,
-            special_requests: booking.guestDetails.specialRequests || null,
             guest_name: booking.guestDetails.fullName,
             guest_email: booking.guestDetails.email,
             guest_phone: booking.guestDetails.whatsapp || null,
@@ -155,296 +189,174 @@ export const useBookingStore = create<BookingState>()(
             guest_id_type: booking.guestDetails.idType || null,
             guest_id_number: booking.guestDetails.idNumber || null,
             arrival_time: booking.guestDetails.arrivalTime || null,
-          }
+            special_requests: booking.guestDetails.specialRequests || null
+          };
 
-          const { error: bookingError } = await supabase.from("bookings").insert(bookingToInsert)
+          const { error: bookingError } = await supabase.from("bookings").insert(bookingToInsert);
+          if (bookingError) throw bookingError;
 
-          if (bookingError) throw bookingError
-
-          const checkInDate = parseISO(booking.checkIn)
-          const checkOutDate = parseISO(booking.checkOut)
           const datesToBlock = eachDayOfInterval({
-            start: checkInDate,
-            end: addDays(checkOutDate, -1),
-          }).map((date) => ({
+            start: parseISO(booking.checkIn),
+            end: addDays(parseISO(booking.checkOut), -1),
+          }).map(date => ({
             villa_id: booking.villaId,
             booked_date: format(date, "yyyy-MM-dd"),
             booking_id: booking.id,
             status: "booked",
-          }))
+          }));
 
-          const { error: datesError } = await supabase.from("villa_booked_dates").insert(datesToBlock)
+          const { error: datesError } = await supabase.from("villa_booked_dates").insert(datesToBlock);
+          if (datesError) throw datesError; // TODO: Add rollback logic for booking if this fails
 
-          if (datesError) {
-            console.error("Failed to block dates:", datesError)
-            throw datesError
-          }
-
-          set({ isLoading: false })
-          return { success: true }
+          await get().fetchAndSetGlobalBookedDates(); // Refresh booked dates
+          set({ isLoading: false });
+          return { success: true };
         } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : "Unknown error"
-          set({ isLoading: false, error: errorMessage })
-          return { success: false, error: errorMessage }
+          const message = err instanceof Error ? err.message : "An unknown error occurred.";
+          set({ isLoading: false, error: message });
+          return { success: false, error: message };
         }
       },
 
-      fetchBookingsByEmail: async (email) => {
-        set({ isLoading: true, error: null })
+      fetchGuestBookings: async (email) => {
+        set({ isLoading: true, error: null });
         try {
           const { data, error } = await supabase
             .from("bookings")
-            .select("*")
+            .select(`*, villas(name, images)`)
             .eq("guest_email", email.toLowerCase())
-            .order("created_at", { ascending: false })
+            .order("created_at", { ascending: false });
 
-          if (error) {
-            set({ isLoading: false, error: error.message })
-            return []
-          }
+          if (error) throw error;
+          const bookings = (data || []).map(mapDbBookingToCompletedBooking);
 
-          const bookings: CompletedBooking[] = (data || []).map((b: DbBooking) => ({
-            id: b.id,
-            referenceNumber: b.reference_number,
-            villaId: b.villa_id,
-            villaName: "",
-            villaImage: "",
-            checkIn: b.check_in,
-            checkOut: b.check_out,
-            guests: b.guests,
-            nights: b.nights,
-            basePrice: b.base_price || 0,
-            cleaningFee: b.cleaning_fee || 0,
-            serviceFee: b.service_fee || 0,
-            discountAmount: b.discount_amount || 0,
-            discountCode: b.discount_code,
-            total: b.total_price,
-            status: b.status,
-            paymentStatus: b.payment_status,
-            guestDetails: {
-              fullName: b.guest_name,
-              email: b.guest_email,
-              whatsapp: b.guest_phone || "",
-              specialRequests: b.special_requests || "",
-              country: b.guest_country || "",
-              idType: b.guest_id_type || "",
-              idNumber: b.guest_id_number || "",
-              arrivalTime: b.arrival_time || "",
-            },
-            paymentMethod: b.payment_method || "",
-            createdAt: b.created_at,
-          }))
-
-          set({ isLoading: false })
-          return bookings
+          set({ isLoading: false });
+          return bookings;
         } catch (err) {
-          set({ isLoading: false, error: "Failed to fetch bookings" })
-          return []
+          const message = err instanceof Error ? err.message : "Failed to fetch bookings.";
+          set({ isLoading: false, error: message });
+          return [];
         }
       },
 
       fetchBookingByReference: async (reference) => {
-        set({ isLoading: true, error: null })
+        set({ isLoading: true, error: null });
         try {
           const { data, error } = await supabase
             .from("bookings")
-            .select("*")
+            .select(`*, villas(name, images)`)
             .eq("reference_number", reference.toUpperCase())
-            .single()
+            .single();
 
-          if (error || !data) {
-            set({ isLoading: false, error: "Booking not found" })
-            return null
-          }
+          if (error || !data) throw new Error("Booking not found.");
 
-          const booking: CompletedBooking = {
-            id: data.id,
-            referenceNumber: data.reference_number,
-            villaId: data.villa_id,
-            villaName: "",
-            villaImage: "",
-            checkIn: data.check_in,
-            checkOut: data.check_out,
-            guests: data.guests,
-            nights: data.nights,
-            basePrice: data.base_price || 0,
-            cleaningFee: data.cleaning_fee || 0,
-            serviceFee: data.service_fee || 0,
-            discountAmount: data.discount_amount || 0,
-            discountCode: data.discount_code,
-            total: data.total_price,
-            status: data.status,
-            paymentStatus: data.payment_status,
-            guestDetails: {
-              fullName: data.guest_name,
-              email: data.guest_email,
-              whatsapp: data.guest_phone || "",
-              specialRequests: data.special_requests || "",
-              country: data.guest_country || "",
-              idType: data.guest_id_type || "",
-              idNumber: data.guest_id_number || "",
-              arrivalTime: data.arrival_time || "",
-            },
-            paymentMethod: data.payment_method || "",
-            createdAt: data.created_at,
-          }
-
-          set({ isLoading: false })
-          return booking
+          const booking = mapDbBookingToCompletedBooking(data);
+          set({ isLoading: false });
+          return booking;
         } catch (err) {
-          set({ isLoading: false, error: "Failed to fetch booking" })
-          return null
+          const message = err instanceof Error ? err.message : "Failed to fetch booking.";
+          set({ isLoading: false, error: message });
+          return null;
         }
       },
 
-      cancelBookingInSupabase: async (bookingId) => {
-        set({ isLoading: true, error: null })
+      cancelBooking: async (bookingId) => {
+        set({ isLoading: true, error: null });
         try {
-          const { error } = await supabase.from("bookings").update({ status: "cancelled" }).eq("id", bookingId)
+          // Update booking status
+          const { error: updateError } = await supabase
+            .from("bookings")
+            .update({ status: "cancelled" })
+            .eq("id", bookingId);
+          if (updateError) throw updateError;
 
-          if (error) {
-            set({ isLoading: false, error: error.message })
-            return { success: false, error: error.message }
-          }
+          // Free up the dates
+          const { error: deleteDatesError } = await supabase
+            .from("villa_booked_dates")
+            .delete()
+            .eq("booking_id", bookingId);
+          if (deleteDatesError) throw deleteDatesError;
 
-          get().cancelBooking(bookingId)
-          set({ isLoading: false })
-          return { success: true }
+          await get().fetchAndSetGlobalBookedDates(); // Refresh dates
+          set({ isLoading: false });
+          return { success: true };
         } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : "Unknown error"
-          set({ isLoading: false, error: errorMessage })
-          return { success: false, error: errorMessage }
+          const message = err instanceof Error ? err.message : "Failed to cancel booking.";
+          set({ isLoading: false, error: message });
+          return { success: false, error: message };
         }
       },
 
-      fetchAllBookedDates: async () => {
+      fetchAllAdminBookings: async () => {
+        set({ isLoading: true, error: null });
         try {
-          const { data, error } = await supabase.from("villa_booked_dates").select("villa_id, booked_date")
+          const { data, error } = await supabase
+            .from("bookings")
+            .select(`*, villas(name, images)`)
+            .order("created_at", { ascending: false });
 
-          if (error) throw error
-
-          if (data) {
-            const datesMap: Record<string, string[]> = {}
-            data.forEach((item) => {
-              if (!datesMap[item.villa_id]) {
-                datesMap[item.villa_id] = []
-              }
-              datesMap[item.villa_id].push(item.booked_date)
-            })
-
-            set({ globalBookedDates: datesMap })
-          }
-        } catch (error) {
-          console.error("Error fetching booked dates:", error)
-        }
-      },
-
-      adminBookings: [],
-      fetchAllBookings: async () => {
-        set({ isLoading: true, error: null })
-        try {
-          const { data, error } = await supabase.from("bookings").select("*").order("created_at", { ascending: false })
-
-          if (error) {
-            set({ isLoading: false, error: error.message })
-            return
-          }
-
-          const bookings: CompletedBooking[] = (data || []).map((b: DbBooking) => ({
-            id: b.id,
-            referenceNumber: b.reference_number,
-            villaId: b.villa_id,
-            villaName: "",
-            villaImage: "",
-            checkIn: b.check_in,
-            checkOut: b.check_out,
-            guests: b.guests,
-            nights: b.nights,
-            basePrice: b.base_price || 0,
-            cleaningFee: b.cleaning_fee || 0,
-            serviceFee: b.service_fee || 0,
-            discountAmount: b.discount_amount || 0,
-            discountCode: b.discount_code,
-            total: b.total_price,
-            status: b.status,
-            paymentStatus: b.payment_status,
-            guestDetails: {
-              fullName: b.guest_name,
-              email: b.guest_email,
-              whatsapp: b.guest_phone || "",
-              specialRequests: b.special_requests || "",
-              country: b.guest_country || "",
-              idType: b.guest_id_type || "",
-              idNumber: b.guest_id_number || "",
-              arrivalTime: b.arrival_time || "",
-            },
-            paymentMethod: b.payment_method || "",
-            createdAt: b.created_at,
-          }))
-
-          set({ adminBookings: bookings, isLoading: false })
+          if (error) throw error;
+          const bookings = (data || []).map(mapDbBookingToCompletedBooking);
+          set({ adminBookings: bookings, isLoading: false });
         } catch (err) {
-          set({ isLoading: false, error: "Failed to fetch all bookings" })
+          const message = err instanceof Error ? err.message : "Failed to fetch all bookings.";
+          set({ isLoading: false, error: message });
         }
       },
 
       updateBookingStatus: async (bookingId, status) => {
-        set({ isLoading: true, error: null })
+        set({ isLoading: true, error: null });
         try {
-          const { error } = await supabase.from("bookings").update({ status }).eq("id", bookingId)
+          const { error } = await supabase.from("bookings").update({ status }).eq("id", bookingId);
+          if (error) throw error;
 
-          if (error) {
-            set({ isLoading: false, error: error.message })
-            return { success: false, error: error.message }
-          }
+          // Optimistically update local state
+          set(state => ({
+            adminBookings: state.adminBookings.map(b => b.id === bookingId ? { ...b, status } : b),
+          }));
 
-          set((state) => ({
-            adminBookings: state.adminBookings.map((b) => (b.id === bookingId ? { ...b, status } : b)),
-            isLoading: false,
-          }))
-
-          return { success: true }
+          set({ isLoading: false });
+          return { success: true };
         } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : "Unknown error"
-          set({ isLoading: false, error: errorMessage })
-          return { success: false, error: errorMessage }
+          const message = err instanceof Error ? err.message : "Failed to update status.";
+          set({ isLoading: false, error: message });
+          return { success: false, error: message };
         }
       },
     }),
     {
-      name: "stayinubud-booking",
+      name: "stayinubud-booking-session",
       partialize: (state) => ({
         booking: state.booking,
         guestDetails: state.guestDetails,
-        completedBookings: state.completedBookings,
-        globalBookedDates: state.globalBookedDates,
       }),
     },
   ),
-)
+);
 
-export { generateReferenceNumber }
+export { generateReferenceNumber };
 
-// Filter Store (unchanged)
+// --- FILTER STORE (UNCHANGED) ---
+
 export interface FilterState {
-  checkIn: Date | null
-  checkOut: Date | null
-  guests: number
-  priceRange: [number, number]
-  amenities: string[]
-  location: string
-  sortBy: "price-asc" | "price-desc" | "capacity" | "rating"
+  checkIn: Date | null;
+  checkOut: Date | null;
+  guests: number;
+  priceRange: [number, number];
+  amenities: string[];
+  location: string;
+  sortBy: "price-asc" | "price-desc" | "capacity" | "rating";
 }
 
 interface FilterStore extends FilterState {
-  setCheckIn: (date: Date | null) => void
-  setCheckOut: (date: Date | null) => void
-  setGuests: (guests: number) => void
-  setPriceRange: (range: [number, number]) => void
-  toggleAmenity: (amenity: string) => void
-  setLocation: (location: string) => void
-  setSortBy: (sort: FilterState["sortBy"]) => void
-  resetFilters: () => void
+  setCheckIn: (date: Date | null) => void;
+  setCheckOut: (date: Date | null) => void;
+  setGuests: (guests: number) => void;
+  setPriceRange: (range: [number, number]) => void;
+  toggleAmenity: (amenity: string) => void;
+  setLocation: (location: string) => void;
+  setSortBy: (sort: FilterState['sortBy']) => void;
+  resetFilters: () => void;
 }
 
 const initialFilters: FilterState = {
@@ -455,7 +367,7 @@ const initialFilters: FilterState = {
   amenities: [],
   location: "All Locations",
   sortBy: "rating",
-}
+};
 
 export const useFilterStore = create<FilterStore>((set) => ({
   ...initialFilters,
@@ -472,4 +384,4 @@ export const useFilterStore = create<FilterStore>((set) => ({
   setLocation: (location) => set({ location }),
   setSortBy: (sortBy) => set({ sortBy }),
   resetFilters: () => set(initialFilters),
-}))
+}));
