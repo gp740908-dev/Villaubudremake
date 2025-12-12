@@ -22,6 +22,10 @@ export interface GuestDetails {
   email: string
   whatsapp: string
   specialRequests: string
+  country: string
+  idType: string
+  idNumber: string
+  arrivalTime: string
 }
 
 export interface CompletedBooking {
@@ -33,8 +37,15 @@ export interface CompletedBooking {
   checkIn: string
   checkOut: string
   guests: number
+  nights: number
+  basePrice: number
+  cleaningFee: number
+  serviceFee: number
+  discountAmount: number
+  discountCode: string | null
   total: number
   status: "confirmed" | "pending" | "completed" | "cancelled"
+  paymentStatus: "paid" | "pending" | "failed"
   guestDetails: GuestDetails
   paymentMethod: string
   createdAt: string
@@ -116,46 +127,55 @@ export const useBookingStore = create<BookingState>()(
         return state.globalBookedDates[villaId]?.includes(date) || false
       },
 
-      // Save booking to Supabase
       saveBookingToSupabase: async (booking) => {
         set({ isLoading: true, error: null })
         try {
-          // 1. Insert Booking
-          const { error: bookingError } = await supabase.from("bookings").insert({
+          const bookingToInsert = {
             id: booking.id,
             reference_number: booking.referenceNumber,
             villa_id: booking.villaId,
             check_in: booking.checkIn,
             check_out: booking.checkOut,
             guests: booking.guests,
+            nights: booking.nights,
+            base_price: booking.basePrice,
+            cleaning_fee: booking.cleaningFee,
+            service_fee: booking.serviceFee,
+            discount_amount: booking.discountAmount,
+            discount_code: booking.discountCode,
             total_price: booking.total,
             status: booking.status,
+            payment_status: booking.paymentStatus,
             payment_method: booking.paymentMethod,
             special_requests: booking.guestDetails.specialRequests || null,
             guest_name: booking.guestDetails.fullName,
             guest_email: booking.guestDetails.email,
             guest_phone: booking.guestDetails.whatsapp || null,
-          })
+            guest_country: booking.guestDetails.country || null,
+            guest_id_type: booking.guestDetails.idType || null,
+            guest_id_number: booking.guestDetails.idNumber || null,
+            arrival_time: booking.guestDetails.arrivalTime || null,
+          }
+
+          const { error: bookingError } = await supabase.from("bookings").insert(bookingToInsert)
 
           if (bookingError) throw bookingError
 
-          // 2. Generate Dates and Insert into villa_booked_dates
           const checkInDate = parseISO(booking.checkIn)
           const checkOutDate = parseISO(booking.checkOut)
-
           const datesToBlock = eachDayOfInterval({
             start: checkInDate,
-            end: addDays(checkOutDate, -1), // Block until the day before checkout
+            end: addDays(checkOutDate, -1),
           }).map((date) => ({
             villa_id: booking.villaId,
             booked_date: format(date, "yyyy-MM-dd"),
             booking_id: booking.id,
+            status: "booked",
           }))
 
           const { error: datesError } = await supabase.from("villa_booked_dates").insert(datesToBlock)
 
           if (datesError) {
-            // Optional: Rollback booking if dates fail (not doing strict rollback here but good for prod)
             console.error("Failed to block dates:", datesError)
             throw datesError
           }
@@ -169,7 +189,6 @@ export const useBookingStore = create<BookingState>()(
         }
       },
 
-      // Fetch bookings by email
       fetchBookingsByEmail: async (email) => {
         set({ isLoading: true, error: null })
         try {
@@ -188,18 +207,29 @@ export const useBookingStore = create<BookingState>()(
             id: b.id,
             referenceNumber: b.reference_number,
             villaId: b.villa_id,
-            villaName: "", // Will be populated from local data
+            villaName: "",
             villaImage: "",
             checkIn: b.check_in,
             checkOut: b.check_out,
             guests: b.guests,
+            nights: b.nights,
+            basePrice: b.base_price || 0,
+            cleaningFee: b.cleaning_fee || 0,
+            serviceFee: b.service_fee || 0,
+            discountAmount: b.discount_amount || 0,
+            discountCode: b.discount_code,
             total: b.total_price,
             status: b.status,
+            paymentStatus: b.payment_status,
             guestDetails: {
               fullName: b.guest_name,
               email: b.guest_email,
               whatsapp: b.guest_phone || "",
               specialRequests: b.special_requests || "",
+              country: b.guest_country || "",
+              idType: b.guest_id_type || "",
+              idNumber: b.guest_id_number || "",
+              arrivalTime: b.arrival_time || "",
             },
             paymentMethod: b.payment_method || "",
             createdAt: b.created_at,
@@ -213,7 +243,6 @@ export const useBookingStore = create<BookingState>()(
         }
       },
 
-      // Fetch booking by reference number
       fetchBookingByReference: async (reference) => {
         set({ isLoading: true, error: null })
         try {
@@ -237,13 +266,24 @@ export const useBookingStore = create<BookingState>()(
             checkIn: data.check_in,
             checkOut: data.check_out,
             guests: data.guests,
+            nights: data.nights,
+            basePrice: data.base_price || 0,
+            cleaningFee: data.cleaning_fee || 0,
+            serviceFee: data.service_fee || 0,
+            discountAmount: data.discount_amount || 0,
+            discountCode: data.discount_code,
             total: data.total_price,
             status: data.status,
+            paymentStatus: data.payment_status,
             guestDetails: {
               fullName: data.guest_name,
               email: data.guest_email,
               whatsapp: data.guest_phone || "",
               specialRequests: data.special_requests || "",
+              country: data.guest_country || "",
+              idType: data.guest_id_type || "",
+              idNumber: data.guest_id_number || "",
+              arrivalTime: data.arrival_time || "",
             },
             paymentMethod: data.payment_method || "",
             createdAt: data.created_at,
@@ -257,7 +297,6 @@ export const useBookingStore = create<BookingState>()(
         }
       },
 
-      // Cancel booking in Supabase
       cancelBookingInSupabase: async (bookingId) => {
         set({ isLoading: true, error: null })
         try {
@@ -268,7 +307,6 @@ export const useBookingStore = create<BookingState>()(
             return { success: false, error: error.message }
           }
 
-          // Also update local state
           get().cancelBooking(bookingId)
           set({ isLoading: false })
           return { success: true }
@@ -301,7 +339,6 @@ export const useBookingStore = create<BookingState>()(
         }
       },
 
-      // Admin: Fetch all bookings
       adminBookings: [],
       fetchAllBookings: async () => {
         set({ isLoading: true, error: null })
@@ -317,18 +354,29 @@ export const useBookingStore = create<BookingState>()(
             id: b.id,
             referenceNumber: b.reference_number,
             villaId: b.villa_id,
-            villaName: "", // Populated via join ideally, or local lookup
+            villaName: "",
             villaImage: "",
             checkIn: b.check_in,
             checkOut: b.check_out,
             guests: b.guests,
+            nights: b.nights,
+            basePrice: b.base_price || 0,
+            cleaningFee: b.cleaning_fee || 0,
+            serviceFee: b.service_fee || 0,
+            discountAmount: b.discount_amount || 0,
+            discountCode: b.discount_code,
             total: b.total_price,
             status: b.status,
+            paymentStatus: b.payment_status,
             guestDetails: {
               fullName: b.guest_name,
               email: b.guest_email,
               whatsapp: b.guest_phone || "",
               specialRequests: b.special_requests || "",
+              country: b.guest_country || "",
+              idType: b.guest_id_type || "",
+              idNumber: b.guest_id_number || "",
+              arrivalTime: b.arrival_time || "",
             },
             paymentMethod: b.payment_method || "",
             createdAt: b.created_at,
@@ -340,7 +388,6 @@ export const useBookingStore = create<BookingState>()(
         }
       },
 
-      // Update booking status in Supabase
       updateBookingStatus: async (bookingId, status) => {
         set({ isLoading: true, error: null })
         try {
@@ -351,7 +398,6 @@ export const useBookingStore = create<BookingState>()(
             return { success: false, error: error.message }
           }
 
-          // Update local state
           set((state) => ({
             adminBookings: state.adminBookings.map((b) => (b.id === bookingId ? { ...b, status } : b)),
             isLoading: false,
@@ -427,4 +473,3 @@ export const useFilterStore = create<FilterStore>((set) => ({
   setSortBy: (sortBy) => set({ sortBy }),
   resetFilters: () => set(initialFilters),
 }))
-                                                                                   
