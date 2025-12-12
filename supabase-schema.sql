@@ -1,6 +1,20 @@
 -- WARNING: This schema is for context only and is not meant to be run.
 -- Table order and constraints may not be valid for execution.
 
+CREATE TABLE public.admin_users (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  email character varying NOT NULL UNIQUE,
+  password_hash character varying NOT NULL,
+  name character varying NOT NULL,
+  role character varying DEFAULT 'admin'::character varying CHECK (role::text = ANY (ARRAY['super_admin'::character varying, 'admin'::character varying, 'editor'::character varying]::text[])),
+  avatar_url text,
+  is_active boolean DEFAULT true,
+  last_login timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT admin_users_pkey PRIMARY KEY (id)
+);
+
 CREATE TABLE public.admin_activity_logs (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   admin_id uuid,
@@ -17,19 +31,7 @@ CREATE TABLE public.admin_activity_logs (
   CONSTRAINT admin_activity_logs_pkey PRIMARY KEY (id),
   CONSTRAINT admin_activity_logs_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES public.admin_users(id)
 );
-CREATE TABLE public.admin_users (
-  id uuid NOT NULL DEFAULT uuid_generate_v4(),
-  email character varying NOT NULL UNIQUE,
-  password_hash character varying NOT NULL,
-  name character varying NOT NULL,
-  role character varying DEFAULT 'admin'::character varying CHECK (role::text = ANY (ARRAY['super_admin'::character varying, 'admin'::character varying, 'editor'::character varying]::text[])),
-  avatar_url text,
-  is_active boolean DEFAULT true,
-  last_login timestamp with time zone,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT admin_users_pkey PRIMARY KEY (id)
-);
+
 CREATE TABLE public.blog_categories (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   name character varying NOT NULL,
@@ -40,6 +42,7 @@ CREATE TABLE public.blog_categories (
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT blog_categories_pkey PRIMARY KEY (id)
 );
+
 CREATE TABLE public.blog_posts (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   title character varying NOT NULL,
@@ -47,9 +50,9 @@ CREATE TABLE public.blog_posts (
   excerpt text,
   content text,
   featured_image text,
-  gallery ARRAY DEFAULT '{}'::text[],
+  gallery text[] DEFAULT '{}',
   category_id uuid,
-  tags ARRAY DEFAULT '{}'::text[],
+  tags text[] DEFAULT '{}',
   author_id uuid,
   author_name character varying,
   status character varying DEFAULT 'draft'::character varying CHECK (status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying, 'scheduled'::character varying, 'archived'::character varying]::text[])),
@@ -67,6 +70,48 @@ CREATE TABLE public.blog_posts (
   CONSTRAINT blog_posts_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.blog_categories(id),
   CONSTRAINT blog_posts_author_id_fkey FOREIGN KEY (author_id) REFERENCES public.admin_users(id)
 );
+
+CREATE TABLE public.villas (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  name character varying NOT NULL,
+  slug character varying UNIQUE,
+  tagline character varying,
+  description text,
+  short_description character varying,
+  price_per_night bigint NOT NULL DEFAULT 0,
+  original_price bigint,
+  cleaning_fee bigint DEFAULT 0,
+  service_fee bigint DEFAULT 0,
+  capacity integer NOT NULL DEFAULT 2,
+  bedrooms integer NOT NULL DEFAULT 1,
+  bathrooms integer NOT NULL DEFAULT 1,
+  beds integer DEFAULT 1,
+  location character varying DEFAULT 'Ubud, Bali'::character varying,
+  address text,
+  coordinates jsonb DEFAULT '{"lat": -8.5069, "lng": 115.2625}'::jsonb,
+  main_image text,
+  images text[] DEFAULT '{}',
+  video_url text,
+  virtual_tour_url text,
+  amenities text[] DEFAULT '{}',
+  highlights text[] DEFAULT '{}',
+  house_rules text[] DEFAULT '{}',
+  is_featured boolean DEFAULT false,
+  is_available boolean DEFAULT true,
+  status character varying DEFAULT 'active'::character varying CHECK (status::text = ANY (ARRAY['active'::character varying, 'inactive'::character varying, 'maintenance'::character varying]::text[])),
+  rating numeric DEFAULT 5.0 CHECK (rating >= 0::numeric AND rating <= 5::numeric),
+  review_count integer DEFAULT 0,
+  check_in_time character varying DEFAULT '14:00'::character varying,
+  check_out_time character varying DEFAULT '11:00'::character varying,
+  minimum_stay integer DEFAULT 1,
+  max_nights integer DEFAULT 30,
+  meta_title character varying,
+  meta_description text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT villas_pkey PRIMARY KEY (id)
+);
+
 CREATE TABLE public.bookings (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   reference_number character varying NOT NULL UNIQUE,
@@ -100,6 +145,7 @@ CREATE TABLE public.bookings (
   CONSTRAINT bookings_pkey PRIMARY KEY (id),
   CONSTRAINT bookings_villa_id_fkey FOREIGN KEY (villa_id) REFERENCES public.villas(id)
 );
+
 CREATE TABLE public.contact_submissions (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   name character varying NOT NULL,
@@ -120,6 +166,7 @@ CREATE TABLE public.contact_submissions (
   CONSTRAINT contact_submissions_pkey PRIMARY KEY (id),
   CONSTRAINT contact_submissions_replied_by_fkey FOREIGN KEY (replied_by) REFERENCES public.admin_users(id)
 );
+
 CREATE TABLE public.gallery_images (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   title character varying,
@@ -128,7 +175,7 @@ CREATE TABLE public.gallery_images (
   thumbnail_url text,
   category character varying DEFAULT 'general'::character varying,
   villa_id uuid,
-  tags ARRAY DEFAULT '{}'::text[],
+  tags text[] DEFAULT '{}',
   width integer,
   height integer,
   file_size integer,
@@ -142,6 +189,7 @@ CREATE TABLE public.gallery_images (
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT gallery_images_pkey PRIMARY KEY (id)
 );
+
 CREATE TABLE public.offers (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   title character varying NOT NULL,
@@ -159,7 +207,7 @@ CREATE TABLE public.offers (
   minimum_nights integer DEFAULT 1,
   max_nights integer,
   min_booking_value bigint DEFAULT 0,
-  applicable_villas ARRAY DEFAULT '{}'::text[],
+  applicable_villas text[] DEFAULT '{}',
   max_uses integer,
   current_uses integer DEFAULT 0,
   max_uses_per_guest integer DEFAULT 1,
@@ -171,6 +219,7 @@ CREATE TABLE public.offers (
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT offers_pkey PRIMARY KEY (id)
 );
+
 CREATE TABLE public.settings (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   key character varying NOT NULL UNIQUE,
@@ -184,6 +233,7 @@ CREATE TABLE public.settings (
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT settings_pkey PRIMARY KEY (id)
 );
+
 CREATE TABLE public.testimonials (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   guest_name character varying NOT NULL,
@@ -212,6 +262,7 @@ CREATE TABLE public.testimonials (
   CONSTRAINT testimonials_booking_id_fkey FOREIGN KEY (booking_id) REFERENCES public.bookings(id),
   CONSTRAINT testimonials_responded_by_fkey FOREIGN KEY (responded_by) REFERENCES public.admin_users(id)
 );
+
 CREATE TABLE public.villa_booked_dates (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   villa_id uuid NOT NULL,
@@ -222,44 +273,4 @@ CREATE TABLE public.villa_booked_dates (
   CONSTRAINT villa_booked_dates_pkey PRIMARY KEY (id),
   CONSTRAINT villa_booked_dates_booking_id_fkey FOREIGN KEY (booking_id) REFERENCES public.bookings(id),
   CONSTRAINT villa_booked_dates_villa_id_fkey FOREIGN KEY (villa_id) REFERENCES public.villas(id)
-);
-CREATE TABLE public.villas (
-  id uuid NOT NULL DEFAULT uuid_generate_v4(),
-  name character varying NOT NULL,
-  slug character varying UNIQUE,
-  tagline character varying,
-  description text,
-  short_description character varying,
-  price_per_night bigint NOT NULL DEFAULT 0,
-  original_price bigint,
-  cleaning_fee bigint DEFAULT 0,
-  service_fee bigint DEFAULT 0,
-  capacity integer NOT NULL DEFAULT 2,
-  bedrooms integer NOT NULL DEFAULT 1,
-  bathrooms integer NOT NULL DEFAULT 1,
-  beds integer DEFAULT 1,
-  location character varying DEFAULT 'Ubud, Bali'::character varying,
-  address text,
-  coordinates jsonb DEFAULT '{"lat": -8.5069, "lng": 115.2625}'::jsonb,
-  main_image text,
-  images ARRAY DEFAULT '{}'::text[],
-  video_url text,
-  virtual_tour_url text,
-  amenities ARRAY DEFAULT '{}'::text[],
-  highlights ARRAY DEFAULT '{}'::text[],
-  house_rules ARRAY DEFAULT '{}'::text[],
-  is_featured boolean DEFAULT false,
-  is_available boolean DEFAULT true,
-  status character varying DEFAULT 'active'::character varying CHECK (status::text = ANY (ARRAY['active'::character varying, 'inactive'::character varying, 'maintenance'::character varying]::text[])),
-  rating numeric DEFAULT 5.0 CHECK (rating >= 0::numeric AND rating <= 5::numeric),
-  review_count integer DEFAULT 0,
-  check_in_time character varying DEFAULT '14:00'::character varying,
-  check_out_time character varying DEFAULT '11:00'::character varying,
-  minimum_stay integer DEFAULT 1,
-  max_nights integer DEFAULT 30,
-  meta_title character varying,
-  meta_description text,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT villas_pkey PRIMARY KEY (id)
 );
