@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
     RefreshCw,
-    Users,
     Eye,
     Clock,
     MousePointer,
-    TrendingUp,
     Calendar,
     Loader2,
     MapPin
@@ -19,41 +17,23 @@ import {
     Tooltip,
     ResponsiveContainer,
 } from 'recharts';
-import { getVisitorAnalytics, VisitorAnalytics } from '@/lib/visitor-analytics';
 
-// Define types for our analytics data
-// We define this manually now because we fetch it from an API route
-interface BookingAnalyticsState {
-    kpis: any;
-    revenueChartData: any[];
-    recentBookings: any[];
-    villaPerformance: any[];
-    upcomingCheckins: any[];
-    bookingAnalytics: {
-        conversionRate: number;
-        avgBookingValue: number;
-        avgLengthOfStay: number;
-    };
+// Define types based on the combined API response
+interface CombinedAnalytics {
+    bookingAnalytics: any; // Define more specific types if possible
+    visitorAnalytics: any; // Define more specific types if possible
 }
 
 // Format currency
 const formatIDR = (value: number) => {
+    if (!value) return 'IDR 0';
     if (value >= 1000000000) return `IDR ${(value / 1000000000).toFixed(1)}B`;
     if (value >= 1000000) return `IDR ${(value / 1000000).toFixed(1)}M`;
     return `IDR ${value.toLocaleString()}`;
 };
 
-
 // Stat Card Component
-const StatCard = ({
-    title,
-    value,
-    icon: Icon,
-}: {
-    title: string;
-    value: string | number;
-    icon: React.ElementType;
-}) => (
+const StatCard = ({ title, value, icon: Icon }: { title: string; value: string | number; icon: React.ElementType; }) => (
     <div className="admin-card p-4">
         <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-[#A1BC98]/20 flex items-center justify-center">
@@ -83,8 +63,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const AdminAnalytics = () => {
-    const [bookingAnalytics, setBookingAnalytics] = useState<BookingAnalyticsState | null>(null);
-    const [visitorAnalytics, setVisitorAnalytics] = useState<VisitorAnalytics | null>(null);
+    const [analytics, setAnalytics] = useState<CombinedAnalytics | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [sortColumn, setSortColumn] = useState<string | null>('revenue');
@@ -94,22 +73,13 @@ const AdminAnalytics = () => {
         setIsLoading(true);
         setError(null);
         try {
-            // Fetch booking analytics from the new API route
-            const fetchBookingAnalytics = async () => {
-                const response = await fetch('/api/admin/dashboard-analytics');
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Failed to fetch booking analytics');
-                }
-                return response.json();
-            };
-
-            const [bookingData, visitorData] = await Promise.all([
-                fetchBookingAnalytics(),
-                getVisitorAnalytics(),
-            ]);
-            setBookingAnalytics(bookingData);
-            setVisitorAnalytics(visitorData);
+            const response = await fetch('/api/admin/dashboard-analytics');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to fetch analytics');
+            }
+            const data: CombinedAnalytics = await response.json();
+            setAnalytics(data);
         } catch (e: any) {
             setError(e.message || 'Failed to load analytics data.');
         } finally {
@@ -130,7 +100,7 @@ const AdminAnalytics = () => {
         }
     };
     
-    const sortedVillaPerformance = bookingAnalytics ? [...bookingAnalytics.villaPerformance].sort((a, b) => {
+    const sortedVillaPerformance = analytics ? [...analytics.bookingAnalytics.villaPerformance].sort((a, b) => {
         if (!sortColumn) return 0;
         const aVal = a[sortColumn as keyof typeof a];
         const bVal = b[sortColumn as keyof typeof b];
@@ -160,9 +130,11 @@ const AdminAnalytics = () => {
         );
     }
     
-    if (!bookingAnalytics || !visitorAnalytics) {
+    if (!analytics) {
         return <div className="text-center text-gray-500 py-12">No analytics data available.</div>
     }
+
+    const { bookingAnalytics, visitorAnalytics } = analytics;
 
     return (
         <div className="space-y-6">
@@ -173,12 +145,10 @@ const AdminAnalytics = () => {
                         Real-time tracking of your website and booking performance.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button onClick={fetchData} className="admin-btn admin-btn-outline">
-                        <RefreshCw size={16} />
-                        Refresh
-                    </button>
-                </div>
+                <button onClick={fetchData} className="admin-btn admin-btn-outline">
+                    <RefreshCw size={16} />
+                    Refresh
+                </button>
             </div>
 
             {/* Main KPI Grid */}
@@ -218,7 +188,7 @@ const AdminAnalytics = () => {
                     <h2 className="admin-section-title">Top Countries</h2>
                      <div className="-mx-6 -mb-6 mt-4">
                         <ul className="divide-y divide-[#d4dbc8]">
-                            {visitorAnalytics.topCountries.map((country, index) => (
+                            {visitorAnalytics.topCountries.map((country: any, index: number) => (
                                  <li key={index} className="flex items-center justify-between px-6 py-3.5 hover:bg-[#F4F6F1]">
                                     <div className="flex items-center gap-3">
                                          <MapPin size={16} className="text-[#778873]" />
