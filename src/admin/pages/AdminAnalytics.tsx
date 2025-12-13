@@ -100,7 +100,7 @@ const AdminAnalytics = () => {
         }
     };
     
-    const sortedVillaPerformance = analytics ? [...analytics.bookingAnalytics.villaPerformance].sort((a, b) => {
+    const sortedVillaPerformance = analytics?.bookingAnalytics?.villaPerformance ? [...analytics.bookingAnalytics.villaPerformance].sort((a, b) => {
         if (!sortColumn) return 0;
         const aVal = a[sortColumn as keyof typeof a];
         const bVal = b[sortColumn as keyof typeof b];
@@ -153,10 +153,10 @@ const AdminAnalytics = () => {
 
             {/* Main KPI Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                 <StatCard title="Total Views" value={visitorAnalytics.totalViews.toLocaleString()} icon={Eye} />
-                 <StatCard title="Page Views" value={visitorAnalytics.pageViews.length.toLocaleString()} icon={MousePointer} />
-                 <StatCard title="Avg Booking Value" value={formatIDR(bookingAnalytics.avgBookingValue)} icon={Calendar} />
-                 <StatCard title="Avg Stay Length" value={`${bookingAnalytics.avgLengthOfStay.toFixed(1)} nights`} icon={Clock} />
+                 <StatCard title="Total Views" value={visitorAnalytics?.totalViews?.toLocaleString() ?? '0'} icon={Eye} />
+                 <StatCard title="Page Views" value={visitorAnalytics?.pageViews?.length?.toLocaleString() ?? '0'} icon={MousePointer} />
+                 <StatCard title="Avg Booking Value" value={formatIDR(bookingAnalytics?.avgBookingValue)} icon={Calendar} />
+                 <StatCard title="Avg Stay Length" value={`${(bookingAnalytics?.avgLengthOfStay ?? 0).toFixed(1)} nights`} icon={Clock} />
             </div>
 
             {/* Visitor & Booking Analytics Grid */}
@@ -165,7 +165,7 @@ const AdminAnalytics = () => {
                     <h2 className="admin-section-title">Top Pages Visited</h2>
                     <div className="h-80 -ml-4">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={visitorAnalytics.topPages} layout="vertical" margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                            <BarChart data={visitorAnalytics?.topPages ?? []} layout="vertical" margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e0e0e0" />
                                 <XAxis type="number" tick={{ fill: '#6b7c67', fontSize: 12 }} tickLine={false} axisLine={false} />
                                 <YAxis 
@@ -188,7 +188,7 @@ const AdminAnalytics = () => {
                     <h2 className="admin-section-title">Top Countries</h2>
                      <div className="-mx-6 -mb-6 mt-4">
                         <ul className="divide-y divide-[#d4dbc8]">
-                            {visitorAnalytics.topCountries.map((country: any, index: number) => (
+                            {(visitorAnalytics?.topCountries ?? []).map((country: any, index: number) => (
                                  <li key={index} className="flex items-center justify-between px-6 py-3.5 hover:bg-[#F4F6F1]">
                                     <div className="flex items-center gap-3">
                                          <MapPin size={16} className="text-[#778873]" />
@@ -199,7 +199,7 @@ const AdminAnalytics = () => {
                             ))}
                         </ul>
                      </div>
-                     {visitorAnalytics.topCountries.length === 0 && (
+                     {(visitorAnalytics?.topCountries?.length ?? 0) === 0 && (
                          <div className="text-center text-gray-400 py-12">
                             <p>Geographic data not yet available.</p>
                         </div>
