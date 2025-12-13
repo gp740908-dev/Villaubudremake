@@ -8,13 +8,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables.  Please check your .env. local file or Vercel settings.")
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession:  true,
-    detectSessionInUrl: true,
-  },
-})
+// SIMPLIFIED FOR DIAGNOSTICS: Removed the third options argument.
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
 
 export interface DbBooking {
   id: string
