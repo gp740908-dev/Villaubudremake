@@ -252,8 +252,10 @@ const Navbar = () => {
           {/* Logo + Text at top */}
           <div className="flex items-center gap-3 mb-8">
             <img src={logoImage} alt="StayinUBUD" className="h-12" />
-            <span className="text-xl font-bold text-[#778873]" style={{ fontFamily: "'Knewave', cursive" }}>
-              StayinUBUD
+            <span className="text-xl font-bold" style={{ fontFamily: "'Knewave', cursive" }}>
+              <span className="text-[#2d3a29]">Stay</span>
+              <span className="text-[#A1BC98]">in</span>
+              <span className="text-[#2d3a29]">UBUD</span>
             </span>
           </div>
 
