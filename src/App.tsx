@@ -34,7 +34,6 @@ import AdminSettings from "./admin/pages/AdminSettings";
 import AdminTestimonials from "./admin/pages/AdminTestimonials";
 import AdminGallery from "./admin/pages/AdminGallery";
 import AdminSeeder from "./admin/pages/AdminSeeder";
-import AnalyticsTracker from "./components/AnalyticsTracker";
 
 const queryClient = new QueryClient();
 
@@ -44,7 +43,6 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AnalyticsTracker />
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Index />} />
