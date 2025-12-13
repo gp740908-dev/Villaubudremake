@@ -51,11 +51,13 @@ export const getDashboardAnalytics = async () => {
     if (totalVillaDays === 0) return 0;
 
     const bookedDays = bookings.reduce((acc, b) => {
+      if (!b.check_in || !b.check_out) return acc; // NaN Check
       const start = new Date(b.check_in);
       const end = new Date(b.check_out);
       const overlapStart = start > startDate ? start : startDate;
       const overlapEnd = end < endDate ? end : endDate;
-      return acc + (overlapEnd > overlapStart ? differenceInDays(overlapEnd, overlapStart) : 0);
+      const diff = differenceInDays(overlapEnd, overlapStart);
+      return acc + (diff > 0 ? diff : 0); // NaN Check
     }, 0);
 
     return Math.round((bookedDays / totalVillaDays) * 100);
@@ -66,7 +68,11 @@ export const getDashboardAnalytics = async () => {
     previousValue: calculateOccupancy(lastMonthStart, lastMonthEnd, confirmedBookings, villas)
   };
   
-  const totalNightsBooked = confirmedBookings.reduce((sum, b) => sum + differenceInDays(new Date(b.check_out), new Date(b.check_in)), 0);
+  const totalNightsBooked = confirmedBookings.reduce((sum, b) => {
+    if (!b.check_out || !b.check_in) return sum; // NaN Check
+    const nights = differenceInDays(new Date(b.check_out), new Date(b.check_in));
+    return sum + (nights > 0 ? nights : 0); // NaN Check
+  }, 0);
 
   // --- CHART & LISTS ---
   const revenueChartData = Array.from({ length: 12 }).map((_, i) => {
@@ -99,11 +105,13 @@ export const getDashboardAnalytics = async () => {
     const currentMonthDays = differenceInDays(currentMonthEnd, currentMonthStart) + 1;
 
     const bookedNightsInMonth = villaBookings.reduce((acc, b) => {
+        if (!b.check_in || !b.check_out) return acc; // NaN Check
         const start = new Date(b.check_in);
         const end = new Date(b.check_out);
         const overlapStart = start > currentMonthStart ? start : currentMonthStart;
         const overlapEnd = end < currentMonthEnd ? end : currentMonthEnd;
-        return acc + (overlapEnd > overlapStart ? differenceInDays(overlapEnd, overlapStart) : 0);
+        const diff = differenceInDays(overlapEnd, overlapStart);
+        return acc + (diff > 0 ? diff : 0); // NaN Check
     }, 0);
 
     const occupancy = currentMonthDays > 0 ? Math.round((bookedNightsInMonth / currentMonthDays) * 100) : 0;
