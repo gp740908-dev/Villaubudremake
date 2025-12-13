@@ -155,8 +155,8 @@ const AdminAnalytics = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                  <StatCard title="Total Views" value={visitorAnalytics.totalViews.toLocaleString()} icon={Eye} />
                  <StatCard title="Page Views" value={visitorAnalytics.pageViews.length.toLocaleString()} icon={MousePointer} />
-                 <StatCard title="Avg Booking Value" value={formatIDR(bookingAnalytics.bookingAnalytics.avgBookingValue)} icon={Calendar} />
-                 <StatCard title="Avg Stay Length" value={`${bookingAnalytics.bookingAnalytics.avgLengthOfStay.toFixed(1)} nights`} icon={Clock} />
+                 <StatCard title="Avg Booking Value" value={formatIDR(bookingAnalytics.avgBookingValue)} icon={Calendar} />
+                 <StatCard title="Avg Stay Length" value={`${bookingAnalytics.avgLengthOfStay.toFixed(1)} nights`} icon={Clock} />
             </div>
 
             {/* Visitor & Booking Analytics Grid */}
