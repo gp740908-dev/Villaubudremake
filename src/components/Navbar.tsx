@@ -218,7 +218,7 @@ const Navbar = () => {
               transition={{ duration: 0.4, ease: "easeInOut" }}
               className="absolute"
             >
-              <img src={logoImage} alt="StayinUBUD" className="h-[32px] object-contain" />
+              <img src={logoImage} alt="StayinUBUD" className="h-[40px] object-contain" />
             </motion.div>
           </div>
 
