@@ -150,15 +150,6 @@ const Navbar = () => {
                 { label: "Settings", href: "/settings" },
               ]} alignRight />
             </div>
-
-            {/* Book Now Button */}
-            <Link
-              to="/villas"
-              className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-[#A1BC98] to-[#778873] text-white font-semibold hover:shadow-lg transition-shadow whitespace-nowrap"
-            >
-              <Calendar size={18} />
-              Book Now
-            </Link>
           </div>
         </nav>
       </header>
