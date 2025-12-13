@@ -118,10 +118,12 @@ const Navbar = () => {
               className="absolute"
             >
               <span
-                className="text-4xl font-bold bg-gradient-to-r from-[#A1BC98] to-[#778873] bg-clip-text text-transparent whitespace-nowrap"
+                className="text-4xl font-bold whitespace-nowrap"
                 style={{ fontFamily: "'Knewave', cursive" }}
               >
-                StayinUBUD
+                <span className="text-white">Stay</span>
+                <span className="text-[#A1BC98]">in</span>
+                <span className="text-white">UBUD</span>
               </span>
             </motion.div>
             <motion.div
