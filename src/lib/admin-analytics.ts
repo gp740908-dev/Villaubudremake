@@ -143,19 +143,10 @@ export const getDashboardAnalytics = async () => {
     recentBookings,
     villaPerformance,
     upcomingCheckins,
-    analyticsData: {
-      bookingAnalytics: {
-        conversionRate: 0, // Requires website traffic data
-        avgBookingValue: confirmedBookings.length > 0 ? confirmedBookings.reduce((sum, b) => sum + b.total_price, 0) / confirmedBookings.length : 0,
-        avgLengthOfStay: confirmedBookings.length > 0 ? totalNightsBooked / confirmedBookings.length : 0,
-      },
-      // The following require a 3rd party analytics integration (e.g., Google Analytics, Vercel Analytics)
-      visitors: { total: 0, unique: 0, pageViews: 0, avgSessionDuration: '0m 0s', bounceRate: 0 },
-      topPages: [],
-      bookingSources: [],
-      trafficSources: [],
-      deviceDistribution: [],
-      topCountries: [],
+    bookingAnalytics: {
+      conversionRate: 0, // Requires website traffic data
+      avgBookingValue: confirmedBookings.length > 0 ? confirmedBookings.reduce((sum, b) => sum + b.total_price, 0) / confirmedBookings.length : 0,
+      avgLengthOfStay: confirmedBookings.length > 0 ? totalNightsBooked / confirmedBookings.length : 0,
     },
   };
 };
