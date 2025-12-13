@@ -103,13 +103,14 @@ const Navbar = () => {
             : isHomePage
               ? "bg-transparent"
               : "bg-white/95 backdrop-blur-md shadow-sm",
-          isScrolled ? "py-2" : "py-4 lg:py-6",
+          isScrolled ? "py-2" : "py-3 sm:py-4 md:py-5 lg:py-6",
         )}
       >
-        <nav className="mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl" role="navigation" aria-label="Main navigation">
-          <div className="flex items-center justify-between h-16 relative">
-            {/* Left Navigation for Desktop */}
-            <div className="hidden lg:flex flex-1 justify-start gap-8">
+        <nav className="mx-auto px-3 sm:px-4 md:px-6 lg:px-8 max-w-7xl" role="navigation" aria-label="Main navigation">
+          {/* Desktop Layout (1024px+) - Full horizontal with centered logo */}
+          <div className="hidden lg:flex items-center justify-between h-16 relative">
+            {/* Left Navigation */}
+            <div className="flex flex-1 justify-start gap-6 xl:gap-8">
               {leftNavLinks.map((link) => (
                 <Link
                   key={link.name}
@@ -124,11 +125,11 @@ const Navbar = () => {
               ))}
             </div>
 
-            {/* Center Logo for Desktop */}
-            <Link to="/" className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center justify-center">
+            {/* Center Logo */}
+            <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
               <span
                 className={cn(
-                  "text-[20px] font-bold absolute transition-all duration-500 whitespace-nowrap",
+                  "text-lg xl:text-xl font-bold absolute transition-all duration-500 whitespace-nowrap",
                   isScrolled || isOpen
                     ? "opacity-0 scale-90"
                     : isHomePage
@@ -143,7 +144,7 @@ const Navbar = () => {
                 src={logoImage}
                 alt="StayinUBUD Logo"
                 className={cn(
-                  "h-12 transition-all duration-500",
+                  "h-10 xl:h-12 transition-all duration-500",
                   isScrolled || isOpen
                     ? "opacity-100 scale-100"
                     : "opacity-0 scale-90"
@@ -151,8 +152,8 @@ const Navbar = () => {
               />
             </Link>
 
-            {/* Right Navigation for Desktop */}
-            <div className="hidden lg:flex flex-1 justify-end gap-8">
+            {/* Right Navigation */}
+            <div className="flex flex-1 justify-end gap-6 xl:gap-8">
               {rightNavLinks.map((link) => (
                 <Link
                   key={link.name}
@@ -166,30 +167,72 @@ const Navbar = () => {
                 </Link>
               ))}
             </div>
+          </div>
 
-            {/* Mobile Logo */}
-            <div className="flex-1 lg:hidden">
-              <Link to="/" className="flex items-center gap-2">
-                <img src={logoImage} alt="StayinUBUD Logo" className="h-10" />
-              </Link>
+          {/* Tablet Layout (768px - 1023px) - Horizontal with logo on left */}
+          <div className="hidden md:flex lg:hidden items-center justify-between h-14">
+            {/* Logo */}
+            <Link to="/" className="flex items-center flex-shrink-0">
+              <img src={logoImage} alt="StayinUBUD Logo" className="h-9" />
+            </Link>
+
+            {/* Center Navigation - Compact */}
+            <div className="flex items-center justify-center gap-4 flex-1">
+              {allNavLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  className={cn(
+                    "text-sm font-medium transition-colors duration-300",
+                    "relative after:absolute after:bottom-[-2px] after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#A1BC98] after:transition-all after:duration-300 hover:after:w-full",
+                    isHomePage && !isScrolled
+                      ? "text-white/90 hover:text-white drop-shadow-sm"
+                      : "text-[#778873] hover:text-[#2d3a29]",
+                    isActiveLink(link.href) && "text-[#A1BC98] after:w-full"
+                  )}
+                >
+                  {link.name}
+                </Link>
+              ))}
             </div>
 
-            {/* Mobile Hamburger Button */}
-            <div className="flex items-center lg:hidden">
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={cn(
-                  "p-2 rounded-md transition-colors duration-300",
-                  isHomePage && !isScrolled && !isOpen
-                    ? "text-white hover:bg-white/20"
-                    : "text-[#2d3a29] hover:bg-gray-100",
-                )}
-                aria-label={isOpen ? "Close menu" : "Open menu"}
-                aria-expanded={isOpen}
-              >
-                {isOpen ? <X size={28} /> : <Menu size={28} />}
-              </button>
-            </div>
+            {/* Hamburger for Tablet */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className={cn(
+                "p-2 rounded-md transition-colors duration-300 flex-shrink-0",
+                isHomePage && !isScrolled && !isOpen
+                  ? "text-white hover:bg-white/20"
+                  : "text-[#2d3a29] hover:bg-gray-100",
+              )}
+              aria-label={isOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isOpen}
+            >
+              {isOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+
+          {/* Mobile Layout (under 768px) */}
+          <div className="flex md:hidden items-center justify-between h-14">
+            {/* Logo */}
+            <Link to="/" className="flex items-center flex-shrink-0">
+              <img src={logoImage} alt="StayinUBUD Logo" className="h-9" />
+            </Link>
+
+            {/* Hamburger Button */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className={cn(
+                "p-2 rounded-md transition-colors duration-300 flex-shrink-0",
+                isHomePage && !isScrolled && !isOpen
+                  ? "text-white hover:bg-white/20"
+                  : "text-[#2d3a29] hover:bg-gray-100",
+              )}
+              aria-label={isOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isOpen}
+            >
+              {isOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
         </nav>
       </header>
