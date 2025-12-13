@@ -257,53 +257,39 @@ const Navbar = () => {
           {/* Menu Items */}
           <nav className="space-y-0">
             <a
+              href="/"
+              onClick={() => setIsMenuOpen(false)}
+              className="flex items-center px-6 py-4 text-[#2d3a29] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
+            >
+              Home
+            </a>
+            <a
               href="/villas"
               onClick={() => setIsMenuOpen(false)}
-              className="flex items-center px-6 py-4 text-[#778873] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
+              className="flex items-center px-6 py-4 text-[#2d3a29] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
             >
-              All Villas
-            </a>
-            <a
-              href="/about"
-              onClick={() => setIsMenuOpen(false)}
-              className="flex items-center px-6 py-4 text-[#778873] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
-            >
-              About
-            </a>
-            <a
-              href="/blog"
-              onClick={() => setIsMenuOpen(false)}
-              className="flex items-center px-6 py-4 text-[#778873] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
-            >
-              Blog
-            </a>
-            <a
-              href="/offers"
-              onClick={() => setIsMenuOpen(false)}
-              className="flex items-center px-6 py-4 text-[#778873] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
-            >
-              Offers
+              Our Villas
             </a>
             <a
               href="/gallery"
               onClick={() => setIsMenuOpen(false)}
-              className="flex items-center px-6 py-4 text-[#778873] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
+              className="flex items-center px-6 py-4 text-[#2d3a29] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
             >
               Gallery
             </a>
             <a
-              href="/my-bookings"
+              href="/about"
               onClick={() => setIsMenuOpen(false)}
-              className="flex items-center px-6 py-4 text-[#778873] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
+              className="flex items-center px-6 py-4 text-[#2d3a29] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
             >
-              My Bookings
+              About Us
             </a>
             <a
-              href="/contact"
+              href="/blog"
               onClick={() => setIsMenuOpen(false)}
-              className="flex items-center px-6 py-4 text-[#778873] font-medium hover:bg-[#F1F3E0] transition-colors"
+              className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#F1F3E0] transition-colors"
             >
-              Contact
+              Blog
             </a>
           </nav>
         </div>
