@@ -328,17 +328,6 @@ const Navbar = () => {
           </nav>
         </div>
 
-        {/* Drawer Footer - Fixed at bottom */}
-        <div className="fixed bottom-0 right-0 w-full max-w-xs bg-white border-t border-[#F1F3E0] px-6 py-4 z-[1000]">
-          <Link
-            to="/villas"
-            onClick={() => setIsMenuOpen(false)}
-            className="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-lg bg-gradient-to-r from-[#A1BC98] to-[#778873] text-white font-semibold hover:shadow-lg transition-shadow"
-          >
-            <Calendar size={18} />
-            Book Now
-          </Link>
-        </div>
       </motion.div>
     </>
   );
