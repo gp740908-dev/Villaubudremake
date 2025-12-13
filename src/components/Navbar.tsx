@@ -84,29 +84,32 @@ const Navbar = () => {
       >
         <nav className="h-full mx-auto px-8 max-w-7xl flex items-center justify-between">
           {/* Left Menu */}
-          <div className="flex items-center gap-[40px]">
-            <div className="flex gap-8">
-              {/* Villas Dropdown */}
-              <DesktopDropdown label="Villas" dropdownId="villas" items={[
-                { label: "All Villas", href: "/villas" },
-                { label: "Luxury Villas", href: "/villas?type=luxury" },
-                { label: "Budget Villas", href: "/villas?type=budget" },
-                { label: "Ubud Villas", href: "/villas?location=ubud" },
-                { label: "With Pool", href: "/villas?amenity=pool" },
-              ]} />
-
-              <a href="/about" className="text-[#778873] font-medium hover:text-[#A1BC98] transition-colors relative group">
-                About
-                <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
+          <div className="flex items-center gap-[20px]">
+            <div className="flex gap-6">
+              <a href="/" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
+                Home
+                <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
               </a>
 
-              {/* Blog Dropdown */}
-              <DesktopDropdown label="Blog" dropdownId="blog" items={[
-                { label: "All Articles", href: "/blog" },
-                { label: "Travel Tips", href: "/blog/travel-tips" },
-                { label: "Bali Guide", href: "/blog/bali-guide" },
-                { label: "FAQ", href: "/faq" },
-              ]} />
+              <a href="/villas" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
+                Our Villas
+                <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
+              </a>
+
+              <a href="/gallery" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
+                Gallery
+                <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
+              </a>
+
+              <a href="/about" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
+                About Us
+                <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
+              </a>
+
+              <a href="/blog" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
+                Blog
+                <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
+              </a>
             </div>
           </div>
 
@@ -135,22 +138,8 @@ const Navbar = () => {
             </motion.div>
           </div>
 
-          {/* Right Menu */}
-          <div className="flex items-center gap-[32px]">
-            <div className="flex gap-8 items-center">
-              <a href="/offers" className="text-[#778873] font-medium hover:text-[#A1BC98] transition-colors relative group">
-                Offers
-                <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
-              </a>
-
-              {/* Account Dropdown */}
-              <DesktopDropdown label="Account" dropdownId="account" items={[
-                { label: "My Bookings", href: "/my-bookings" },
-                { label: "Profile", href: "/profile" },
-                { label: "Settings", href: "/settings" },
-              ]} alignRight />
-            </div>
-          </div>
+          {/* Right Menu - Empty for balance */}
+          <div className="flex-1"></div>
         </nav>
       </header>
     );
