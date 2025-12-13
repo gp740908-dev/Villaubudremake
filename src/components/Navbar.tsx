@@ -186,7 +186,8 @@ const Navbar = () => {
           {/* Hamburger */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="p-2 hover:bg-black/5 rounded-lg transition-colors"
+            className="p-2 hover:bg-black/10 rounded-lg transition-colors z-[1001]"
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           >
             <motion.div
               animate={{ rotate: isMenuOpen ? 180 : 0 }}
@@ -222,7 +223,7 @@ const Navbar = () => {
           </div>
 
           {/* Search Icon */}
-          <button className="p-2 hover:bg-black/5 rounded-lg transition-colors">
+          <button className="p-2 hover:bg-black/10 rounded-lg transition-colors z-[1001]" aria-label="Search">
             <Search size={24} className="text-[#778873]" />
           </button>
         </nav>
@@ -235,7 +236,8 @@ const Navbar = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 top-[70px] bg-black/30 backdrop-blur-sm z-[999]"
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
             onClick={() => setIsMenuOpen(false)}
           />
         )}
@@ -245,50 +247,93 @@ const Navbar = () => {
       <motion.div
         initial={{ x: "100%" }}
         animate={isMenuOpen ? { x: 0 } : { x: "100%" }}
-        transition={{ duration: 0.3 }}
-        className="fixed top-0 right-0 w-full h-full max-w-xs bg-white z-[999] shadow-xl"
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="fixed top-0 right-0 w-full h-screen max-w-xs bg-white z-[999] shadow-2xl"
       >
-        <div className="pt-24 px-6">
+        {/* Drawer Header - Fixed at top */}
+        <div className="fixed top-0 right-0 w-full max-w-xs h-[90px] bg-white border-b border-[#F1F3E0] flex items-center justify-between px-6 z-[1000]">
           {/* Logo + Text at top */}
-          <div className="flex items-center gap-3 mb-8">
-            <img src={logoImage} alt="StayinUBUD" className="h-12" />
-            <span className="text-xl font-bold" style={{ fontFamily: "'Knewave', cursive" }}>
+          <div className="flex items-center gap-2">
+            <img src={logoImage} alt="StayinUBUD" className="h-10" />
+            <span className="text-lg font-bold" style={{ fontFamily: "'Knewave', cursive" }}>
               <span className="text-[#2d3a29]">Stay</span>
               <span className="text-[#A1BC98]">in</span>
               <span className="text-[#2d3a29]">UBUD</span>
             </span>
           </div>
 
+          {/* Close Button */}
+          <button
+            onClick={() => setIsMenuOpen(false)}
+            className="p-2 hover:bg-[#F1F3E0] rounded-lg transition-colors"
+            aria-label="Close menu"
+          >
+            <X size={24} className="text-[#778873]" />
+          </button>
+        </div>
+
+        {/* Drawer Content - Scrollable below header */}
+        <div className="mt-[90px] h-[calc(100vh-90px-80px)] overflow-y-auto px-0">
           {/* Menu Items */}
-          <nav className="space-y-4">
-            <a href="/villas" onClick={() => setIsMenuOpen(false)} className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
+          <nav className="space-y-0">
+            <a
+              href="/villas"
+              onClick={() => setIsMenuOpen(false)}
+              className="flex items-center px-6 py-4 text-[#778873] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
+            >
               All Villas
             </a>
-            <a href="/about" onClick={() => setIsMenuOpen(false)} className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
+            <a
+              href="/about"
+              onClick={() => setIsMenuOpen(false)}
+              className="flex items-center px-6 py-4 text-[#778873] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
+            >
               About
             </a>
-            <a href="/blog" onClick={() => setIsMenuOpen(false)} className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
+            <a
+              href="/blog"
+              onClick={() => setIsMenuOpen(false)}
+              className="flex items-center px-6 py-4 text-[#778873] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
+            >
               Blog
             </a>
-            <a href="/offers" onClick={() => setIsMenuOpen(false)} className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
+            <a
+              href="/offers"
+              onClick={() => setIsMenuOpen(false)}
+              className="flex items-center px-6 py-4 text-[#778873] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
+            >
               Offers
             </a>
-            <a href="/my-bookings" onClick={() => setIsMenuOpen(false)} className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
-              My Bookings
-            </a>
-            <a href="/gallery" onClick={() => setIsMenuOpen(false)} className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
+            <a
+              href="/gallery"
+              onClick={() => setIsMenuOpen(false)}
+              className="flex items-center px-6 py-4 text-[#778873] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
+            >
               Gallery
             </a>
-            <a href="/contact" onClick={() => setIsMenuOpen(false)} className="block text-[#778873] font-medium py-2">
+            <a
+              href="/my-bookings"
+              onClick={() => setIsMenuOpen(false)}
+              className="flex items-center px-6 py-4 text-[#778873] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
+            >
+              My Bookings
+            </a>
+            <a
+              href="/contact"
+              onClick={() => setIsMenuOpen(false)}
+              className="flex items-center px-6 py-4 text-[#778873] font-medium hover:bg-[#F1F3E0] transition-colors"
+            >
               Contact
             </a>
           </nav>
+        </div>
 
-          {/* Book Button */}
+        {/* Drawer Footer - Fixed at bottom */}
+        <div className="fixed bottom-0 right-0 w-full max-w-xs bg-white border-t border-[#F1F3E0] px-6 py-4 z-[1000]">
           <Link
             to="/villas"
             onClick={() => setIsMenuOpen(false)}
-            className="flex items-center justify-center gap-2 w-full mt-8 px-6 py-3 rounded-lg bg-gradient-to-r from-[#A1BC98] to-[#778873] text-white font-semibold"
+            className="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-lg bg-gradient-to-r from-[#A1BC98] to-[#778873] text-white font-semibold hover:shadow-lg transition-shadow"
           >
             <Calendar size={18} />
             Book Now
