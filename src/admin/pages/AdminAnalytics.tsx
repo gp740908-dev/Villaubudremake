@@ -18,10 +18,10 @@ import {
     ResponsiveContainer,
 } from 'recharts';
 
-// Define types based on the combined API response
+// Define types based on the corrected API response
 interface CombinedAnalytics {
-    bookingAnalytics: any; // Define more specific types if possible
-    visitorAnalytics: any; // Define more specific types if possible
+    dashboardAnalytics: any; // This now correctly matches the API response
+    visitorAnalytics: any;
 }
 
 // Format currency
@@ -100,7 +100,7 @@ const AdminAnalytics = () => {
         }
     };
     
-    const sortedVillaPerformance = analytics?.bookingAnalytics?.villaPerformance ? [...analytics.bookingAnalytics.villaPerformance].sort((a, b) => {
+    const sortedVillaPerformance = analytics?.dashboardAnalytics?.villaPerformance ? [...analytics.dashboardAnalytics.villaPerformance].sort((a, b) => {
         if (!sortColumn) return 0;
         const aVal = a[sortColumn as keyof typeof a];
         const bVal = b[sortColumn as keyof typeof b];
@@ -134,7 +134,8 @@ const AdminAnalytics = () => {
         return <div className="text-center text-gray-500 py-12">No analytics data available.</div>
     }
 
-    const { bookingAnalytics, visitorAnalytics } = analytics;
+    // Correctly destructure from the analytics state
+    const { dashboardAnalytics, visitorAnalytics } = analytics;
 
     return (
         <div className="space-y-6">
@@ -151,12 +152,12 @@ const AdminAnalytics = () => {
                 </button>
             </div>
 
-            {/* Main KPI Grid */}
+            {/* Main KPI Grid - Corrected data paths */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                  <StatCard title="Total Views" value={visitorAnalytics?.totalViews?.toLocaleString() ?? '0'} icon={Eye} />
                  <StatCard title="Page Views" value={visitorAnalytics?.pageViews?.length?.toLocaleString() ?? '0'} icon={MousePointer} />
-                 <StatCard title="Avg Booking Value" value={formatIDR(bookingAnalytics?.avgBookingValue)} icon={Calendar} />
-                 <StatCard title="Avg Stay Length" value={`${(bookingAnalytics?.avgLengthOfStay ?? 0).toFixed(1)} nights`} icon={Clock} />
+                 <StatCard title="Avg Booking Value" value={formatIDR(dashboardAnalytics?.bookingAnalytics?.avgBookingValue)} icon={Calendar} />
+                 <StatCard title="Avg Stay Length" value={`${(dashboardAnalytics?.bookingAnalytics?.avgLengthOfStay ?? 0).toFixed(1)} nights`} icon={Clock} />
             </div>
 
             {/* Visitor & Booking Analytics Grid */}

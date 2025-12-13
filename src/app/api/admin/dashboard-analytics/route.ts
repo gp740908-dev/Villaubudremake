@@ -6,31 +6,28 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
     try {
-        const [dashboardData, visitorAnalytics] = await Promise.all([
+        // Fetch data from the analytics modules
+        const [dashboardAnalytics, visitorAnalytics] = await Promise.all([
             getDashboardAnalytics(),
             getVisitorAnalytics(),
         ]);
 
-        if (!dashboardData || !visitorAnalytics) {
+        // Check if data fetching was successful
+        if (!dashboardAnalytics || !visitorAnalytics) {
             return new NextResponse(
-                JSON.stringify({ message: "Couldn't generate all analytics data" }),
+                JSON.stringify({ message: "Couldn't fetch all required analytics data" }),
                 { status: 500, headers: { 'Content-Type': 'application/json' } }
             );
         }
 
-        // FIX: Flatten the nested bookingAnalytics object to create a clean structure
-        const bookingAnalytics = {
-            ...dashboardData,
-            ...dashboardData.bookingAnalytics, // Hoist nested properties to the top
-        };
-        delete bookingAnalytics.bookingAnalytics; // Remove the redundant nested object
-
+        // Combine the analytics data into a single, clean object
         const combinedData = {
-            bookingAnalytics,
+            dashboardAnalytics,
             visitorAnalytics,
         };
 
         return NextResponse.json(combinedData);
+
     } catch (error: any) {
         console.error("Error in dashboard-analytics API route:", error);
         return new NextResponse(
