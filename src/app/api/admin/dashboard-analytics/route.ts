@@ -2,25 +2,29 @@ import { getDashboardAnalytics } from "@/lib/admin-analytics";
 import { getVisitorAnalytics } from "@/lib/visitor-analytics";
 import { NextResponse } from "next/server";
 
-// Ensure this route is always dynamic
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
     try {
-        // Fetch both booking and visitor analytics in parallel
-        const [bookingAnalytics, visitorAnalytics] = await Promise.all([
+        const [dashboardData, visitorAnalytics] = await Promise.all([
             getDashboardAnalytics(),
             getVisitorAnalytics(),
         ]);
 
-        if (!bookingAnalytics || !visitorAnalytics) {
+        if (!dashboardData || !visitorAnalytics) {
             return new NextResponse(
                 JSON.stringify({ message: "Couldn't generate all analytics data" }),
                 { status: 500, headers: { 'Content-Type': 'application/json' } }
             );
         }
 
-        // Combine the data into a single response object
+        // FIX: Flatten the nested bookingAnalytics object to create a clean structure
+        const bookingAnalytics = {
+            ...dashboardData,
+            ...dashboardData.bookingAnalytics, // Hoist nested properties to the top
+        };
+        delete bookingAnalytics.bookingAnalytics; // Remove the redundant nested object
+
         const combinedData = {
             bookingAnalytics,
             visitorAnalytics,
@@ -28,8 +32,9 @@ export async function GET() {
 
         return NextResponse.json(combinedData);
     } catch (error: any) {
+        console.error("Error in dashboard-analytics API route:", error);
         return new NextResponse(
-            JSON.stringify({ message: error.message }),
+            JSON.stringify({ message: error.message || "An internal server error occurred" }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
         );
     }
