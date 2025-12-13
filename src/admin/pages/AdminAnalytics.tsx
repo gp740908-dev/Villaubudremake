@@ -12,6 +12,8 @@ import {
     Monitor,
     Tablet,
     Loader2,
+    BarChart2,
+    MapPin
 } from 'lucide-react';
 import {
     BarChart,
@@ -27,9 +29,10 @@ import {
     Legend,
 } from 'recharts';
 import { getDashboardAnalytics } from '@/lib/admin-analytics';
+import { getVisitorAnalytics, VisitorAnalytics } from '@/lib/visitor-analytics';
 
 // Define types for our analytics data
-type AnalyticsState = Awaited<ReturnType<typeof getDashboardAnalytics>>;
+type BookingAnalyticsState = Awaited<ReturnType<typeof getDashboardAnalytics>>;
 
 // Format currency
 const formatIDR = (value: number) => {
@@ -83,7 +86,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const AdminAnalytics = () => {
-    const [analytics, setAnalytics] = useState<AnalyticsState | null>(null);
+    const [bookingAnalytics, setBookingAnalytics] = useState<BookingAnalyticsState | null>(null);
+    const [visitorAnalytics, setVisitorAnalytics] = useState<VisitorAnalytics | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [sortColumn, setSortColumn] = useState<string | null>('revenue');
@@ -91,9 +95,15 @@ const AdminAnalytics = () => {
 
     const fetchData = async () => {
         setIsLoading(true);
+        setError(null);
         try {
-            const data = await getDashboardAnalytics();
-            setAnalytics(data);
+            // Fetch both booking and visitor analytics in parallel
+            const [bookingData, visitorData] = await Promise.all([
+                getDashboardAnalytics(),
+                getVisitorAnalytics(),
+            ]);
+            setBookingAnalytics(bookingData);
+            setVisitorAnalytics(visitorData);
         } catch (e: any) {
             setError(e.message || 'Failed to load analytics data.');
         } finally {
@@ -114,7 +124,7 @@ const AdminAnalytics = () => {
         }
     };
     
-    const sortedVillaPerformance = analytics ? [...analytics.villaPerformance].sort((a, b) => {
+    const sortedVillaPerformance = bookingAnalytics ? [...bookingAnalytics.villaPerformance].sort((a, b) => {
         if (!sortColumn) return 0;
         const aVal = a[sortColumn as keyof typeof a];
         const bVal = b[sortColumn as keyof typeof b];
@@ -132,7 +142,7 @@ const AdminAnalytics = () => {
         );
     }
 
-    if (error || !analytics) {
+    if (error || !bookingAnalytics || !visitorAnalytics) {
         return (
              <div className="text-red-500 bg-red-100 p-4 rounded-lg">
                 <p className="font-bold">Error loading analytics:</p>
@@ -144,7 +154,7 @@ const AdminAnalytics = () => {
         );
     }
     
-    const { analyticsData } = analytics;
+    const { analyticsData } = bookingAnalytics;
 
     return (
         <div className="space-y-6">
@@ -163,23 +173,53 @@ const AdminAnalytics = () => {
                 </div>
             </div>
 
-            {/* Placeholder for future date range selector */}
-
-            {/* Visitor Analytics - Placeholder */}
+            {/* Visitor Analytics */}
             <div className="admin-card p-6">
                 <h2 className="admin-section-title">Visitor Analytics</h2>
                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-                    <StatCard title="Total Visitors" value={analyticsData.visitors.total.toLocaleString()} icon={Users} />
-                    <StatCard title="Unique Visitors" value={analyticsData.visitors.unique.toLocaleString()} icon={Eye} />
-                    <StatCard title="Page Views" value={analyticsData.visitors.pageViews.toLocaleString()} icon={MousePointer} />
-                    <StatCard title="Avg Session" value={analyticsData.visitors.avgSessionDuration} icon={Clock} />
-                    <StatCard title="Bounce Rate" value={`${analyticsData.visitors.bounceRate}%`} icon={TrendingUp} />
+                    <StatCard title="Total Views" value={visitorAnalytics.totalViews.toLocaleString()} icon={Eye} />
+                    <StatCard title="Page Views" value={visitorAnalytics.pageViews.length.toLocaleString()} icon={MousePointer} />
+                    {/* Placeholders for metrics not yet implemented */}
+                    <StatCard title="Unique Visitors" value="N/A" icon={Users} />
+                    <StatCard title="Avg Session" value="N/A" icon={Clock} />
+                    <StatCard title="Bounce Rate" value="N/A" icon={TrendingUp} />
                 </div>
 
                 <h3 className="text-sm font-semibold text-[#2d3a29] mb-4">Top Pages Visited</h3>
-                <div className="h-64 text-center text-gray-400 flex items-center justify-center">
-                    <p>Page visit data not yet available.</p>
+                <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={visitorAnalytics.topPages} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e0e0e0" />
+                            <XAxis dataKey="path" tick={{ fill: '#6b7c67', fontSize: 12 }} tickLine={false} axisLine={false} />
+                            <YAxis tick={{ fill: '#6b7c67', fontSize: 12 }} tickLine={false} axisLine={false} />
+                            <Tooltip content={<CustomTooltip />} cursor={{ fill: '#F4F6F1' }} />
+                            <Bar dataKey="views" name="Views" fill="#A1BC98" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                    </ResponsiveContainer>
                 </div>
+            </div>
+
+            {/* Top Countries */}
+             <div className="admin-card p-6">
+                <h2 className="admin-section-title">Top Countries</h2>
+                 <div className="-mx-6 -mb-6">
+                    <ul className="divide-y divide-[#d4dbc8]">
+                        {visitorAnalytics.topCountries.map((country, index) => (
+                             <li key={index} className="flex items-center justify-between px-6 py-3 hover:bg-[#F4F6F1]">
+                                <div className="flex items-center gap-3">
+                                     <MapPin size={16} className="text-[#778873]" />
+                                     <span className="font-medium text-[#2d3a29]">{country.country || 'Unknown'}</span>
+                                </div>
+                                 <span className="font-bold text-[#2d3a29]">{country.views.toLocaleString()}</span>
+                            </li>
+                        ))}
+                    </ul>
+                 </div>
+                 {visitorAnalytics.topCountries.length === 0 && (
+                     <div className="text-center text-gray-400 py-12">
+                        <p>Geographic data not yet available.</p>
+                    </div>
+                 )}
             </div>
 
             {/* Booking Analytics */}
@@ -259,7 +299,7 @@ const AdminAnalytics = () => {
             </div>
 
             {/* Other Analytics - Placeholders */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="admin-card p-6">
                     <h2 className="admin-section-title">Traffic Sources</h2>
                      <div className="h-48 text-center text-gray-400 flex items-center justify-center">
@@ -270,12 +310,6 @@ const AdminAnalytics = () => {
                     <h2 className="admin-section-title">Device Distribution</h2>
                      <div className="h-48 text-center text-gray-400 flex items-center justify-center">
                          <p>Device distribution data not yet available.</p>
-                    </div>
-                </div>
-                <div className="admin-card p-6">
-                    <h2 className="admin-section-title">Top Countries</h2>
-                     <div className="h-48 text-center text-gray-400 flex items-center justify-center">
-                         <p>Geographic data not yet available.</p>
                     </div>
                 </div>
             </div>
