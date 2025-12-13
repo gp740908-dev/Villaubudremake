@@ -17,14 +17,30 @@ export interface VisitorAnalytics {
 }
 
 export const getVisitorAnalytics = async (): Promise<VisitorAnalytics> => {
-  const { data, error } = await supabase.functions.invoke('get-analytics');
+  const { data: rawData, error } = await supabase.functions.invoke('get-analytics');
 
   if (error) {
-    throw new Error(`Failed to fetch visitor analytics: ${error.message}`);
+    console.error(`Error fetching visitor analytics: ${error.message}`);
+    // Return a default, empty state instead of throwing an error
+    return {
+      totalViews: 0,
+      pageViews: [],
+      topPages: [],
+      topCountries: [],
+    };
   }
 
-  // Process the raw data to get top pages and countries
-  const pageViews = data.pageViews as PageView[];
+  // Gracefully handle cases where there is no data or no page views
+  if (!rawData || !rawData.pageViews || rawData.pageViews.length === 0) {
+    return {
+      totalViews: 0,
+      pageViews: [],
+      topPages: [],
+      topCountries: [],
+    };
+  }
+
+  const pageViews = rawData.pageViews as PageView[];
 
   const pageCounts = pageViews.reduce((acc, view) => {
     acc[view.path] = (acc[view.path] || 0) + 1;
@@ -34,11 +50,11 @@ export const getVisitorAnalytics = async (): Promise<VisitorAnalytics> => {
   const topPages = Object.entries(pageCounts)
     .map(([path, views]) => ({ path, views }))
     .sort((a, b) => b.views - a.views)
-    .slice(0, 10);
+    .slice(0, 5); // Limit to top 5 for a cleaner UI
 
   const countryCounts = pageViews.reduce((acc, view) => {
     if (view.country) {
-        acc[view.country] = (acc[view.country] || 0) + 1;
+      acc[view.country] = (acc[view.country] || 0) + 1;
     }
     return acc;
   }, {} as Record<string, number>);
@@ -46,10 +62,11 @@ export const getVisitorAnalytics = async (): Promise<VisitorAnalytics> => {
   const topCountries = Object.entries(countryCounts)
     .map(([country, views]) => ({ country, views }))
     .sort((a, b) => b.views - a.views)
-    .slice(0, 10);
+    .slice(0, 5); // Limit to top 5
 
   return {
-    ...data,
+    totalViews: rawData.totalViews || 0,
+    pageViews: pageViews,
     topPages,
     topCountries,
   };
