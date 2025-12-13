@@ -72,9 +72,7 @@ const Navbar = () => {
   // ============================================
   // DESKTOP NAVBAR (≥1024px)
   // ============================================
-  const DesktopNavbar = () => {
-    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-
+  if (!isMobile) {
     return (
       <header
         className={cn(
@@ -89,42 +87,13 @@ const Navbar = () => {
           <div className="flex items-center gap-[40px]">
             <div className="flex gap-8">
               {/* Villas Dropdown */}
-              <div
-                className="relative group"
-                onMouseEnter={() => setOpenDropdown("villas")}
-                onMouseLeave={() => setOpenDropdown(null)}
-              >
-                <button className="text-[#778873] font-medium hover:text-[#A1BC98] transition-colors relative group">
-                  Villas
-                  <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
-                </button>
-                <AnimatePresence>
-                  {openDropdown === "villas" && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg p-2 z-[1001]"
-                    >
-                      <a href="/villas" className="block px-4 py-2 hover:bg-[#F1F3E0] rounded text-[#778873]">
-                        All Villas
-                      </a>
-                      <a href="/villas?type=luxury" className="block px-4 py-2 hover:bg-[#F1F3E0] rounded text-[#778873]">
-                        Luxury Villas
-                      </a>
-                      <a href="/villas?type=budget" className="block px-4 py-2 hover:bg-[#F1F3E0] rounded text-[#778873]">
-                        Budget Villas
-                      </a>
-                      <a href="/villas?location=ubud" className="block px-4 py-2 hover:bg-[#F1F3E0] rounded text-[#778873]">
-                        Ubud Villas
-                      </a>
-                      <a href="/villas?amenity=pool" className="block px-4 py-2 hover:bg-[#F1F3E0] rounded text-[#778873]">
-                        With Pool
-                      </a>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              <DesktopDropdown label="Villas" dropdownId="villas" items={[
+                { label: "All Villas", href: "/villas" },
+                { label: "Luxury Villas", href: "/villas?type=luxury" },
+                { label: "Budget Villas", href: "/villas?type=budget" },
+                { label: "Ubud Villas", href: "/villas?location=ubud" },
+                { label: "With Pool", href: "/villas?amenity=pool" },
+              ]} />
 
               <a href="/about" className="text-[#778873] font-medium hover:text-[#A1BC98] transition-colors relative group">
                 About
@@ -132,39 +101,12 @@ const Navbar = () => {
               </a>
 
               {/* Blog Dropdown */}
-              <div
-                className="relative group"
-                onMouseEnter={() => setOpenDropdown("blog")}
-                onMouseLeave={() => setOpenDropdown(null)}
-              >
-                <button className="text-[#778873] font-medium hover:text-[#A1BC98] transition-colors relative group">
-                  Blog
-                  <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
-                </button>
-                <AnimatePresence>
-                  {openDropdown === "blog" && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg p-2 z-[1001]"
-                    >
-                      <a href="/blog" className="block px-4 py-2 hover:bg-[#F1F3E0] rounded text-[#778873]">
-                        All Articles
-                      </a>
-                      <a href="/blog/travel-tips" className="block px-4 py-2 hover:bg-[#F1F3E0] rounded text-[#778873]">
-                        Travel Tips
-                      </a>
-                      <a href="/blog/bali-guide" className="block px-4 py-2 hover:bg-[#F1F3E0] rounded text-[#778873]">
-                        Bali Guide
-                      </a>
-                      <a href="/faq" className="block px-4 py-2 hover:bg-[#F1F3E0] rounded text-[#778873]">
-                        FAQ
-                      </a>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              <DesktopDropdown label="Blog" dropdownId="blog" items={[
+                { label: "All Articles", href: "/blog" },
+                { label: "Travel Tips", href: "/blog/travel-tips" },
+                { label: "Bali Guide", href: "/blog/bali-guide" },
+                { label: "FAQ", href: "/faq" },
+              ]} />
             </div>
           </div>
 
@@ -200,36 +142,11 @@ const Navbar = () => {
               </a>
 
               {/* Account Dropdown */}
-              <div
-                className="relative group"
-                onMouseEnter={() => setOpenDropdown("account")}
-                onMouseLeave={() => setOpenDropdown(null)}
-              >
-                <button className="text-[#778873] font-medium hover:text-[#A1BC98] transition-colors relative group">
-                  Account
-                  <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
-                </button>
-                <AnimatePresence>
-                  {openDropdown === "account" && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg p-2 z-[1001]"
-                    >
-                      <a href="/my-bookings" className="block px-4 py-2 hover:bg-[#F1F3E0] rounded text-[#778873]">
-                        My Bookings
-                      </a>
-                      <a href="/profile" className="block px-4 py-2 hover:bg-[#F1F3E0] rounded text-[#778873]">
-                        Profile
-                      </a>
-                      <a href="/settings" className="block px-4 py-2 hover:bg-[#F1F3E0] rounded text-[#778873]">
-                        Settings
-                      </a>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              <DesktopDropdown label="Account" dropdownId="account" items={[
+                { label: "My Bookings", href: "/my-bookings" },
+                { label: "Profile", href: "/profile" },
+                { label: "Settings", href: "/settings" },
+              ]} alignRight />
             </div>
 
             {/* Book Now Button */}
@@ -244,16 +161,16 @@ const Navbar = () => {
         </nav>
       </header>
     );
-  };
+  }
 
   // ============================================
   // MOBILE NAVBAR (<768px)
   // ============================================
-  const MobileNavbar = () => {
-    const isScrolled = scrollY > scrollEnd;
-    const shouldShow = showMobileNav || scrollY < 50;
+  const isScrolled = scrollY > scrollEnd;
+  const shouldShow = showMobileNav || scrollY < 50;
 
-    return (
+  return (
+    <>
       <header
         className={cn(
           "fixed z-[1000] transition-all duration-300",
@@ -307,24 +224,25 @@ const Navbar = () => {
         </nav>
       </header>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 top-[70px] bg-black/30 backdrop-blur-sm z-[999] md:hidden"
+            className="fixed inset-0 top-[70px] bg-black/30 backdrop-blur-sm z-[999]"
             onClick={() => setIsMenuOpen(false)}
           />
         )}
       </AnimatePresence>
 
+      {/* Mobile Menu Drawer */}
       <motion.div
         initial={{ x: "100%" }}
         animate={isMenuOpen ? { x: 0 } : { x: "100%" }}
         transition={{ duration: 0.3 }}
-        className="fixed top-0 right-0 w-full h-full max-w-xs bg-white z-[999] md:hidden shadow-xl"
+        className="fixed top-0 right-0 w-full h-full max-w-xs bg-white z-[999] shadow-xl"
       >
         <div className="pt-24 px-6">
           {/* Logo + Text at top */}
@@ -337,25 +255,25 @@ const Navbar = () => {
 
           {/* Menu Items */}
           <nav className="space-y-4">
-            <a href="/villas" className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
+            <a href="/villas" onClick={() => setIsMenuOpen(false)} className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
               All Villas
             </a>
-            <a href="/about" className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
+            <a href="/about" onClick={() => setIsMenuOpen(false)} className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
               About
             </a>
-            <a href="/blog" className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
+            <a href="/blog" onClick={() => setIsMenuOpen(false)} className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
               Blog
             </a>
-            <a href="/offers" className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
+            <a href="/offers" onClick={() => setIsMenuOpen(false)} className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
               Offers
             </a>
-            <a href="/my-bookings" className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
+            <a href="/my-bookings" onClick={() => setIsMenuOpen(false)} className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
               My Bookings
             </a>
-            <a href="/gallery" className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
+            <a href="/gallery" onClick={() => setIsMenuOpen(false)} className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
               Gallery
             </a>
-            <a href="/contact" className="block text-[#778873] font-medium py-2 border-b border-[#F1F3E0]">
+            <a href="/contact" onClick={() => setIsMenuOpen(false)} className="block text-[#778873] font-medium py-2">
               Contact
             </a>
           </nav>
@@ -371,15 +289,61 @@ const Navbar = () => {
           </Link>
         </div>
       </motion.div>
-    );
-  };
+    </>
+  );
+};
 
-  // Render appropriate navbar
-  if (isMobile) {
-    return <MobileNavbar />;
-  }
+// Desktop Dropdown Component
+interface DropdownItem {
+  label: string;
+  href: string;
+}
 
-  return <DesktopNavbar />;
+interface DesktopDropdownProps {
+  label: string;
+  dropdownId: string;
+  items: DropdownItem[];
+  alignRight?: boolean;
+}
+
+const DesktopDropdown = ({ label, dropdownId, items, alignRight }: DesktopDropdownProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div
+      className="relative group"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
+      <button className="text-[#778873] font-medium hover:text-[#A1BC98] transition-colors relative group">
+        {label}
+        <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className={cn(
+              "absolute top-full mt-2 w-48 bg-white rounded-lg shadow-lg p-2 z-[1001]",
+              alignRight ? "right-0" : "left-0"
+            )}
+          >
+            {items.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="block px-4 py-2 hover:bg-[#F1F3E0] rounded text-[#778873]"
+              >
+                {item.label}
+              </a>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 };
 
 export default Navbar;
