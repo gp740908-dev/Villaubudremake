@@ -19,11 +19,22 @@ import {
     Tooltip,
     ResponsiveContainer,
 } from 'recharts';
-import { getDashboardAnalytics } from '@/lib/admin-analytics';
 import { getVisitorAnalytics, VisitorAnalytics } from '@/lib/visitor-analytics';
 
 // Define types for our analytics data
-type BookingAnalyticsState = Awaited<ReturnType<typeof getDashboardAnalytics>>;
+// We define this manually now because we fetch it from an API route
+interface BookingAnalyticsState {
+    kpis: any;
+    revenueChartData: any[];
+    recentBookings: any[];
+    villaPerformance: any[];
+    upcomingCheckins: any[];
+    bookingAnalytics: {
+        conversionRate: number;
+        avgBookingValue: number;
+        avgLengthOfStay: number;
+    };
+}
 
 // Format currency
 const formatIDR = (value: number) => {
@@ -83,8 +94,18 @@ const AdminAnalytics = () => {
         setIsLoading(true);
         setError(null);
         try {
+            // Fetch booking analytics from the new API route
+            const fetchBookingAnalytics = async () => {
+                const response = await fetch('/api/admin/dashboard-analytics');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to fetch booking analytics');
+                }
+                return response.json();
+            };
+
             const [bookingData, visitorData] = await Promise.all([
-                getDashboardAnalytics(),
+                fetchBookingAnalytics(),
                 getVisitorAnalytics(),
             ]);
             setBookingAnalytics(bookingData);
