@@ -251,10 +251,10 @@ const Navbar = () => {
         className="fixed top-0 right-0 w-full h-screen max-w-xs bg-white z-[999] shadow-2xl"
       >
         {/* Drawer Header - Fixed at top */}
-        <div className="fixed top-0 right-0 w-full max-w-xs h-[90px] bg-white border-b border-[#F1F3E0] flex items-center justify-between px-6 z-[1000]">
+        <div className="fixed top-0 right-0 w-full max-w-xs h-[100px] bg-white border-b border-[#F1F3E0] flex items-center justify-between px-6 z-[1000]">
           {/* Logo + Text at top */}
-          <div className="flex items-center gap-2">
-            <img src={logoImage} alt="StayinUBUD" className="h-10" />
+          <div className="flex items-center gap-3">
+            <img src={logoImage} alt="StayinUBUD" className="h-14" />
             <span className="text-lg font-bold" style={{ fontFamily: "'Knewave', cursive" }}>
               <span className="text-[#2d3a29]">Stay</span>
               <span className="text-[#A1BC98]">in</span>
