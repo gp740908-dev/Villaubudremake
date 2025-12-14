@@ -85,19 +85,19 @@ const Navbar = () => {
         <nav className="h-full mx-auto px-8 max-w-7xl flex items-center justify-between relative">
           {/* Left Menu */}
           <div className="flex items-center gap-8">
-            <a href="/" className="text-[#778873] font-medium hover:text-[#A1BC98] transition-colors relative group">
+            <a href="/" className={cn("font-medium transition-colors relative group", scrollY > scrollEnd ? "text-white hover:text-[#A1BC98]" : "text-[#778873] hover:text-[#A1BC98]")}>
               Home
-              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
+              <span className={cn("absolute bottom-[-4px] left-0 w-0 h-[2px] group-hover:w-full transition-all duration-300", scrollY > scrollEnd ? "bg-[#A1BC98]" : "bg-[#A1BC98]")} />
             </a>
 
-            <a href="/villas" className="text-[#778873] font-medium hover:text-[#A1BC98] transition-colors relative group">
+            <a href="/villas" className={cn("font-medium transition-colors relative group", scrollY > scrollEnd ? "text-white hover:text-[#A1BC98]" : "text-[#778873] hover:text-[#A1BC98]")}>
               Our Villas
-              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
+              <span className={cn("absolute bottom-[-4px] left-0 w-0 h-[2px] group-hover:w-full transition-all duration-300", scrollY > scrollEnd ? "bg-[#A1BC98]" : "bg-[#A1BC98]")} />
             </a>
 
-            <a href="/gallery" className="text-[#778873] font-medium hover:text-[#A1BC98] transition-colors relative group">
+            <a href="/gallery" className={cn("font-medium transition-colors relative group", scrollY > scrollEnd ? "text-white hover:text-[#A1BC98]" : "text-[#778873] hover:text-[#A1BC98]")}>
               Gallery
-              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
+              <span className={cn("absolute bottom-[-4px] left-0 w-0 h-[2px] group-hover:w-full transition-all duration-300", scrollY > scrollEnd ? "bg-[#A1BC98]" : "bg-[#A1BC98]")} />
             </a>
           </div>
 
