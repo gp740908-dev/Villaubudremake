@@ -184,7 +184,7 @@ const Navbar = () => {
               animate={{ rotate: isMenuOpen ? 180 : 0 }}
               transition={{ duration: 0.3 }}
             >
-              {isMenuOpen ? <X size={24} className="text-[#778873]" /> : <Menu size={24} className="text-[#778873]" />}
+              {isMenuOpen ? <X size={24} className={cn("transition-colors", scrollY > scrollEnd ? "text-[#778873]" : "text-white")} /> : <Menu size={24} className={cn("transition-colors", scrollY > scrollEnd ? "text-[#778873]" : "text-white")} />}
             </motion.div>
           </button>
 
