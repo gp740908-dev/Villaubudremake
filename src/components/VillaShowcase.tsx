@@ -108,12 +108,12 @@ const VillaShowcase = () => {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   const { villas: dbVillas, fetchVillas, isLoading } = useVillaStore();
-  const { globalBookedDates, fetchAllBookedDates } = useBookingStore();
+  const { globalBookedDates, fetchAndSetGlobalBookedDates } = useBookingStore();
 
   useEffect(() => {
     fetchVillas();
-    fetchAllBookedDates();
-  }, [fetchVillas, fetchAllBookedDates]);
+    fetchAndSetGlobalBookedDates();
+  }, [fetchVillas, fetchAndSetGlobalBookedDates]);
 
   const showcaseVillas = useMemo(() => {
     return dbVillas.slice(0, 5).map(villa => // Limit to 5 for homepage display
