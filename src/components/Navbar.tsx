@@ -82,35 +82,23 @@ const Navbar = () => {
             : "h-[100px] bg-transparent backdrop-blur-[10px]"
         )}
       >
-        <nav className="h-full mx-auto px-8 max-w-7xl flex items-center justify-between">
+        <nav className="h-full mx-auto px-8 max-w-7xl flex items-center justify-between relative">
           {/* Left Menu */}
-          <div className="flex items-center gap-[20px]">
-            <div className="flex gap-6">
-              <a href="/" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
-                Home
-                <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
-              </a>
+          <div className="flex items-center gap-8">
+            <a href="/" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
+              Home
+              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
+            </a>
 
-              <a href="/villas" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
-                Our Villas
-                <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
-              </a>
+            <a href="/villas" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
+              Our Villas
+              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
+            </a>
 
-              <a href="/gallery" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
-                Gallery
-                <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
-              </a>
-
-              <a href="/about" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
-                About Us
-                <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
-              </a>
-
-              <a href="/blog" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
-                Blog
-                <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
-              </a>
-            </div>
+            <a href="/gallery" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
+              Gallery
+              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
+            </a>
           </div>
 
           {/* Center Logo/Text */}
@@ -138,8 +126,23 @@ const Navbar = () => {
             </motion.div>
           </div>
 
-          {/* Right Menu - Empty for balance */}
-          <div className="flex-1"></div>
+          {/* Right Menu */}
+          <div className="flex items-center gap-8">
+            <a href="/about" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
+              About Us
+              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
+            </a>
+
+            <a href="/contact" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
+              Contact
+              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
+            </a>
+
+            <a href="/blog" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
+              Blog
+              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
+            </a>
+          </div>
         </nav>
       </header>
     );
