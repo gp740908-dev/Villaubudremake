@@ -169,8 +169,8 @@ const Navbar = () => {
           "fixed z-[1000] transition-all duration-300",
           shouldShow ? "opacity-100" : "opacity-0 pointer-events-none",
           isScrolled && shouldShow
-            ? "top-0 left-0 right-0 w-[90%] max-w-[480px] mx-auto h-[70px] left-1/2 -translate-x-1/2 mt-[15px] rounded-[50px] bg-[rgba(241,243,224,0.95)] backdrop-blur-[15px] shadow-lg"
-            : "top-0 left-0 right-0 w-full h-[70px] bg-transparent"
+            ? "top-0 left-0 right-0 w-[90%] max-w-[480px] mx-auto h-[80px] left-1/2 -translate-x-1/2 mt-[15px] rounded-[50px] bg-[rgba(241,243,224,0.95)] backdrop-blur-[15px] shadow-lg"
+            : "top-0 left-0 right-0 w-full h-[80px] bg-transparent"
         )}
       >
         <nav className="h-full px-4 flex items-center justify-between">
