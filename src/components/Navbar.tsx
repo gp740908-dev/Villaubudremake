@@ -1,257 +1,287 @@
-'use client'
-
-import { useState, useEffect } from "react"
-import { Link, useLocation } from "react-router-dom"
-import { Globe, Phone, Mail, Instagram, Facebook, Menu, X } from "lucide-react"
-import { cn } from "@/lib/utils"
-import logoImage from "@/assets/logo.png"
-
-const leftNavLinks = [
-  { name: "Home", href: "/" },
-  { name: "Our Villas", href: "/villas" },
-  { name: "About", href: "/about" },
-]
-
-const rightNavLinks = [
-  { name: "Gallery", href: "/gallery" },
-  { name: "Blog", href: "/blog" },
-  { name: "Contact", href: "/contact" },
-]
-
-const allNavLinks = [...leftNavLinks, ...rightNavLinks]
+import { useState, useEffect, useRef } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import logoImage from "@/assets/logo.png";
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const [language, setLanguage] = useState<"EN" | "ID">("EN")
-  const location = useLocation()
+  const location = useLocation();
+  const [scrollY, setScrollY] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrollDirection, setScrollDirection] = useState<"up" | "down">("up");
+  const [showMobileNav, setShowMobileNav] = useState(true);
+  const lastScrollY = useRef(0);
 
-  const isHomePage = location.pathname === "/"
+  const isHomePage = location.pathname === "/";
 
+  // Handle scroll
   useEffect(() => {
-    let ticking = false
+    let ticking = false;
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const threshold = isMobile ? 100 : 50
-          setIsScrolled(window.scrollY > threshold)
-          ticking = false
-        })
-        ticking = true
+          const currentScrollY = window.scrollY;
+          setScrollY(currentScrollY);
+
+          // Detect scroll direction
+          if (currentScrollY > lastScrollY.current) {
+            setScrollDirection("down");
+            if (currentScrollY > 50) setShowMobileNav(false);
+          } else {
+            setScrollDirection("up");
+            setShowMobileNav(true);
+          }
+          lastScrollY.current = currentScrollY;
+          ticking = false;
+        });
+        ticking = true;
       }
-    }
+    };
 
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Handle resize
+  useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 1024) // Changed to 1024 to match tailwind lg breakpoint
-    }
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-    handleResize()
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    window.addEventListener("resize", handleResize)
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
-      window.removeEventListener("resize", handleResize)
-    }
-  }, [isMobile])
-
+  // Close menu on route change
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden"
-    } else {
-      document.body.style.overflow = ""
-    }
-    return () => {
-      document.body.style.overflow = ""
-    }
-  }, [isOpen])
+    setIsMenuOpen(false);
+  }, [location.pathname]);
 
-  useEffect(() => {
-    setIsOpen(false)
-  }, [location.pathname])
+  // Calculate animation values based on scroll
+  const scrollStart = 50;
+  const scrollEnd = 80;
+  const scrollProgress = Math.max(0, Math.min(1, (scrollY - scrollStart) / (scrollEnd - scrollStart)));
 
-  const isActiveLink = (href: string) => {
-    if (href === "/") return location.pathname === "/"
-    return location.pathname.startsWith(href)
+  const textOpacity = Math.max(0, 1 - scrollProgress);
+  const logoOpacity = Math.min(1, scrollProgress);
+  const textScale = Math.max(0.3, 1 - scrollProgress);
+  const logoScale = Math.min(1, 0.5 + scrollProgress);
+
+  // ============================================
+  // DESKTOP NAVBAR (â‰¥1024px)
+  // ============================================
+  if (!isMobile) {
+    return (
+      <header
+        className={cn(
+          "fixed top-0 left-0 right-0 z-[1000] transition-all duration-300 overflow-visible",
+          scrollY > scrollEnd
+            ? "h-[80px] bg-[rgba(241,243,224,0.95)] backdrop-blur-[15px] shadow-lg"
+            : "h-[120px] bg-transparent"
+        )}
+      >
+        <nav className="h-full mx-auto px-8 max-w-7xl flex items-center justify-center relative">
+          {/* Left Menu */}
+          <div className="flex items-center gap-8 absolute left-8">
+            <a href="/" className={cn("font-medium transition-colors relative group", scrollY > scrollEnd ? "text-[#778873] hover:text-[#A1BC98]" : "text-white hover:text-[#A1BC98]")}>
+              Home
+              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
+            </a>
+
+            <a href="/villas" className={cn("font-medium transition-colors relative group", scrollY > scrollEnd ? "text-[#778873] hover:text-[#A1BC98]" : "text-white hover:text-[#A1BC98]")}>
+              Our Villas
+              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
+            </a>
+
+            <a href="/gallery" className={cn("font-medium transition-colors relative group", scrollY > scrollEnd ? "text-[#778873] hover:text-[#A1BC98]" : "text-white hover:text-[#A1BC98]")}>
+              Gallery
+              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
+            </a>
+          </div>
+
+          {/* Center Logo/Text */}
+          <a href="/" className="flex items-center justify-center h-full cursor-pointer hover:opacity-80 transition-opacity">
+            <motion.div
+              style={{
+                opacity: textOpacity,
+                scale: textScale,
+                color: scrollY > scrollEnd ? "#2d3a29" : "white"
+              }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              className="absolute"
+            >
+              <span
+                className="text-4xl font-bold whitespace-nowrap"
+                style={{ fontFamily: "'Knewave', cursive" }}
+              >
+                <span>Stay</span>
+                <span className="text-[#A1BC98]">in</span>
+                <span>UBUD</span>
+              </span>
+            </motion.div>
+            <motion.div
+              style={{
+                opacity: logoOpacity,
+                scale: logoScale,
+                height: scrollY > scrollEnd ? "70px" : "100px"
+              }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              className="absolute flex items-center"
+            >
+              <img src={logoImage} alt="StayinUBUD" className="object-contain h-full" />
+            </motion.div>
+          </a>
+
+          {/* Right Menu */}
+          <div className="flex items-center gap-8 absolute right-8">
+            <a href="/about" className={cn("font-medium transition-colors relative group", scrollY > scrollEnd ? "text-[#778873] hover:text-[#A1BC98]" : "text-white hover:text-[#A1BC98]")}>
+              About Us
+              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
+            </a>
+
+            <a href="/contact" className={cn("font-medium transition-colors relative group", scrollY > scrollEnd ? "text-[#778873] hover:text-[#A1BC98]" : "text-white hover:text-[#A1BC98]")}>
+              Contact
+              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
+            </a>
+
+            <a href="/blog" className={cn("font-medium transition-colors relative group", scrollY > scrollEnd ? "text-[#778873] hover:text-[#A1BC98]" : "text-white hover:text-[#A1BC98]")}>
+              Blog
+              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
+            </a>
+          </div>
+        </nav>
+      </header>
+    );
   }
 
-  const navLinkClasses = (isTransparent: boolean) =>
-    cn(
-      "relative text-[15px] font-medium tracking-[0.5px] transition-colors duration-300",
-      "after:absolute after:bottom-[-4px] after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#A1BC98] after:transition-all after:duration-300",
-      "hover:after:w-full",
-      isTransparent
-        ? "text-white/90 hover:text-white drop-shadow-sm"
-        : "text-[#778873] hover:text-[#2d3a29]",
-    )
+  // ============================================
+  // MOBILE NAVBAR (<768px)
+  // ============================================
+  const isScrolled = scrollY > scrollEnd;
+  const shouldShow = showMobileNav || scrollY < 50;
 
   return (
     <>
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[1001] focus:px-4 focus:py-2 focus:bg-[#A1BC98] focus:text-white focus:rounded-lg focus:outline-none"
-      >
-        Skip to content
-      </a>
-
       <header
         className={cn(
-          "fixed top-0 left-0 right-0 z-[1000] transition-all duration-300 ease-in-out",
-          isScrolled || isOpen
-            ? "bg-white/95 backdrop-blur-md shadow-sm"
-            : isHomePage
-              ? "bg-transparent"
-              : "bg-white/95 backdrop-blur-md shadow-sm",
-          isScrolled ? "py-2" : "py-4 lg:py-6",
+          "fixed z-[1000] transition-all duration-300",
+          shouldShow ? "opacity-100" : "opacity-0 pointer-events-none",
+          isScrolled && shouldShow
+            ? "top-0 left-0 right-0 w-[90%] max-w-[480px] mx-auto h-[80px] left-1/2 -translate-x-1/2 mt-[15px] rounded-[50px] bg-[rgba(241,243,224,0.95)] backdrop-blur-[15px] shadow-lg"
+            : "top-0 left-0 right-0 w-full h-[80px] bg-transparent"
         )}
       >
-        <nav className="mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl" role="navigation" aria-label="Main navigation">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo for Desktop */}
-            <div className="hidden lg:flex flex-1 justify-start">
-              <Link to="/" className="flex items-center gap-2">
-                 <img src={logoImage} alt="StayinUBUD Logo" className="h-12" />
-                 <span className={cn("font-semibold text-xl tracking-tight", isHomePage && !isScrolled ? 'text-white' : 'text-[#2d3a29]')}>StayinUBUD</span>
-              </Link>
-            </div>
+        <nav className="h-full px-4 flex items-center justify-between">
+          {/* Hamburger */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="p-2 hover:bg-black/10 rounded-lg transition-colors z-[1001]"
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          >
+            <motion.div
+              animate={{ rotate: isMenuOpen ? 180 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {isMenuOpen ? <X size={24} className={cn("transition-colors", scrollY > scrollEnd ? "text-[#778873]" : "text-white")} /> : <Menu size={24} className={cn("transition-colors", scrollY > scrollEnd ? "text-[#778873]" : "text-white")} />}
+            </motion.div>
+          </button>
 
-            {/* Logo for Mobile/Tablet */}
-             <div className="flex-1 lg:hidden">
-                 <Link to="/" className="flex items-center gap-2">
-                     <img src={logoImage} alt="StayinUBUD Logo" className="h-10" />
-                 </Link>
-             </div>
-
-
-            {/* Desktop & Tablet Navigation */}
-            <div className="hidden lg:flex flex-1 justify-center items-center gap-8">
-              {allNavLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    to={link.href}
-                    className={cn(navLinkClasses(isHomePage && !isScrolled), isActiveLink(link.href) && "text-[#A1BC98] after:w-full")}
-                  >
-                    {link.name}
-                  </Link>
-              ))}
-            </div>
-
-            {/* Right side controls */}
-            <div className="hidden lg:flex flex-1 justify-end items-center gap-4">
-                <button
-                    onClick={() => setLanguage(language === "EN" ? "ID" : "EN")}
-                    className={cn(
-                    "flex items-center gap-1 text-sm font-medium transition-colors duration-300",
-                    isHomePage && !isScrolled ? "text-white/90 hover:text-white" : "text-[#778873] hover:text-[#2d3a29]",
-                    )}
-                >
-                    <Globe size={16} />
-                    {language}
-                </button>
-                 <Link
-                    to="/villas"
-                    className="px-5 py-2.5 bg-gradient-to-r from-[#A1BC98] to-[#778873] text-white text-sm font-semibold rounded-full shadow-md hover:shadow-lg transition-all duration-300"
-                    > Book Now </Link>
-            </div>
-
-            {/* Mobile Hamburger Button */}
-            <div className="flex items-center lg:hidden">
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={cn(
-                  "p-2 rounded-md transition-colors duration-300",
-                   isHomePage && !isScrolled && !isOpen
-                    ? "text-white hover:bg-white/20"
-                    : "text-[#2d3a29] hover:bg-gray-100",
-                )}
-                aria-label={isOpen ? "Close menu" : "Open menu"}
-                aria-expanded={isOpen}
+          {/* Center Logo/Text */}
+          <div className="flex-1 flex items-center justify-center">
+            <motion.div
+              style={{ opacity: textOpacity, scale: textScale }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="absolute"
+            >
+              <span
+                className="text-2xl font-bold whitespace-nowrap"
+                style={{ fontFamily: "'Knewave', cursive" }}
               >
-                {isOpen ? <X size={28} /> : <Menu size={28} />}
-              </button>
-            </div>
+                <span className="text-white">Stay</span>
+                <span className="text-[#A1BC98]">in</span>
+                <span className="text-white">UBUD</span>
+              </span>
+            </motion.div>
+            <motion.div
+              style={{ opacity: logoOpacity, scale: logoScale }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="absolute"
+            >
+              <img src={logoImage} alt="StayinUBUD" className="h-[70px] object-contain" />
+            </motion.div>
           </div>
         </nav>
       </header>
 
       {/* Mobile Menu Overlay */}
-      <div
-        className={cn(
-          "fixed inset-0 z-[999] bg-black/30 backdrop-blur-sm lg:hidden transition-opacity duration-300",
-          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[998]"
+            onClick={() => setIsMenuOpen(false)}
+          />
         )}
-        onClick={() => setIsOpen(false)}
-      />
-      
-      {/* Mobile Menu Panel */}
-      <div
+      </AnimatePresence>
+
+      {/* Mobile Menu Dropdown - Floating from top */}
+      <motion.div
+        initial={{ y: "-100%", opacity: 0 }}
+        animate={isMenuOpen ? { y: 0, opacity: 1 } : { y: "-100%", opacity: 0 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
         className={cn(
-          "fixed top-0 left-0 h-full w-[85%] max-w-sm bg-white z-[1000] lg:hidden transition-transform duration-300 ease-in-out",
-          isOpen ? "transform translate-x-0" : "transform -translate-x-full",
+          "fixed left-0 right-0 mx-auto w-[90%] max-w-[480px] bg-[rgba(241,243,224,0.95)] backdrop-blur-[15px] rounded-[24px] shadow-lg z-[999] overflow-hidden transition-all duration-300",
+          isScrolled && shouldShow
+            ? "top-[110px]"
+            : "top-[140px]"
         )}
       >
-        <div className="flex flex-col h-full">
-            <div className="p-4 border-b border-gray-200">
-                 <Link to="/" className="flex items-center gap-2">
-                     <img src={logoImage} alt="StayinUBUD Logo" className="h-10" />
-                      <span className="font-semibold text-lg text-[#2d3a29]">StayinUBUD</span>
-                 </Link>
-            </div>
-
-            <nav className="flex-grow p-4">
-              <ul className="space-y-2">
-                {allNavLinks.map((link) => (
-                  <li key={link.name}>
-                    <Link
-                      to={link.href}
-                      onClick={() => setIsOpen(false)}
-                      className={cn(
-                        "block w-full text-left px-4 py-3 rounded-lg text-lg font-medium transition-colors",
-                        isActiveLink(link.href)
-                          ? "bg-[#F1F3E0] text-[#2d3a29]"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
-                      )}
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-
-             <div className="p-4 space-y-4 border-t border-gray-200">
-                <button
-                    onClick={() => setLanguage(language === "EN" ? "ID" : "EN")}
-                    className="flex items-center gap-2 text-gray-600 font-medium w-full text-left p-2 rounded-lg hover:bg-gray-100"
-                    >
-                    <Globe size={18} />
-                    {language === "EN" ? "Switch to Bahasa Indonesia" : "Switch to English"}
-                </button>
-
-                 <div className="flex gap-2">
-                    <a href="https://instagram.com/stayinubud" target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-full text-gray-600 hover:bg-[#A1BC98] hover:text-white transition-colors">
-                        <Instagram size={20} />
-                    </a>
-                    <a href="https://facebook.com/stayinubud" target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-full text-gray-600 hover:bg-[#A1BC98] hover:text-white transition-colors">
-                        <Facebook size={20} />
-                    </a>
-                 </div>
-             </div>
-
-            <div className="p-4">
-                <Link
-                to="/villas"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center justify-center w-full py-3.5 bg-gradient-to-r from-[#A1BC98] to-[#778873] text-white text-base font-semibold uppercase tracking-wide rounded-full shadow-lg hover:shadow-xl transition-all"
-                >
-                Book Your Stay
-                </Link>
-            </div>
-        </div>
-      </div>
+        {/* Menu Items */}
+        <nav className="divide-y divide-[#F1F3E0]">
+          <a
+            href="/"
+            onClick={() => setIsMenuOpen(false)}
+            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/15 transition-colors"
+          >
+            <span className="text-lg">Home</span>
+          </a>
+          <a
+            href="/villas"
+            onClick={() => setIsMenuOpen(false)}
+            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/15 transition-colors"
+          >
+            <span className="text-lg">Our Villas</span>
+          </a>
+          <a
+            href="/gallery"
+            onClick={() => setIsMenuOpen(false)}
+            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/15 transition-colors"
+          >
+            <span className="text-lg">Gallery</span>
+          </a>
+          <a
+            href="/about"
+            onClick={() => setIsMenuOpen(false)}
+            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/15 transition-colors"
+          >
+            <span className="text-lg">About Us</span>
+          </a>
+          <a
+            href="/blog"
+            onClick={() => setIsMenuOpen(false)}
+            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/15 transition-colors"
+          >
+            <span className="text-lg">Blog</span>
+          </a>
+        </nav>
+      </motion.div>
     </>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;
