@@ -16,7 +16,7 @@ import BlogPostPage from "./pages/BlogPostPage";
 import GalleryPage from "./pages/GalleryPage";
 import FAQPage from "./pages/FAQPage";
 import NotFound from "./pages/NotFound";
-// import AnalyticsTracker from "./components/AnalyticsTracker";
+import AnalyticsTracker from "./components/AnalyticsTracker";
 
 // Admin imports
 import AdminLayout from "./admin/components/AdminLayout";
@@ -43,7 +43,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      {/* <AnalyticsTracker /> */}
+      <AnalyticsTracker />
       <BrowserRouter>
         <Routes>
           {/* Public Routes */}

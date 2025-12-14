@@ -42,7 +42,7 @@ const AdminGallery = () => {
     useEffect(() => {
         fetchImages();
         fetchVillas();
-    }, []);
+    }, [fetchImages, fetchVillas]);
 
     useEffect(() => {
         if (selectedImage) {
@@ -66,7 +66,7 @@ const AdminGallery = () => {
                 sort_order: images.length,
             });
         }
-    }, [selectedImage, modalOpen]);
+    }, [selectedImage, modalOpen, images.length]);
 
     const filteredImages = images.filter(img => {
         const matchesSearch = img.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||

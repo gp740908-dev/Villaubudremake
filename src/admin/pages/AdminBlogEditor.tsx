@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+"""import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
     ArrowLeft,
@@ -66,7 +66,7 @@ const AdminBlogEditor = () => {
             setIsLoading(false);
         };
         loadData();
-    }, [id, isEditing, posts.length]);
+    }, [id, isEditing, posts.length, fetchCategories, fetchPosts, getPostById]);
 
     // Auto-generate slug from title
     useEffect(() => {
@@ -344,3 +344,4 @@ const AdminBlogEditor = () => {
 };
 
 export default AdminBlogEditor;
+""

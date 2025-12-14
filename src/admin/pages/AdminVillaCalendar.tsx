@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
     ChevronLeft,
@@ -36,7 +36,7 @@ const AdminVillaCalendar = () => {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDates, setSelectedDates] = useState<string[]>([]);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         if (!id) return;
         setIsLoading(true);
 
@@ -65,11 +65,11 @@ const AdminVillaCalendar = () => {
             setBlockedDates(typedVillaData.villa_booked_dates.map(d => d.booked_date));
         }
         setIsLoading(false);
-    };
+    }, [id]);
 
     useEffect(() => {
         fetchData();
-    }, [id]);
+    }, [id, fetchData]);
 
     // Calendar logic
     const monthStart = startOfMonth(currentMonth);

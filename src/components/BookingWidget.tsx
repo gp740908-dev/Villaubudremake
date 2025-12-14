@@ -55,15 +55,16 @@ const BookingWidget = ({ villa, variant = "sidebar" }: BookingWidgetProps) => {
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     // Check if any date in range is booked
-    let current = new Date(checkIn);
     let available = true;
-    while (current < checkOut) {
-      const dateStr = format(current, "yyyy-MM-dd");
-      if (allBookedDates.includes(dateStr)) {
-        available = false;
-        break;
-      }
-      current.setDate(current.getDate() + 1);
+    const loopCheckIn = new Date(checkIn);
+    const loopCheckOut = new Date(checkOut);
+
+    for (let d = loopCheckIn; d < loopCheckOut; d.setDate(d.getDate() + 1)) {
+        const dateStr = format(d, "yyyy-MM-dd");
+        if (allBookedDates.includes(dateStr)) {
+            available = false;
+            break;
+        }
     }
 
     setIsAvailable(available);

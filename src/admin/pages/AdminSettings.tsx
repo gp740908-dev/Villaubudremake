@@ -26,7 +26,7 @@ const AdminSettings = () => {
 
     useEffect(() => {
         fetchSettings();
-    }, []);
+    }, [fetchSettings]);
 
     useEffect(() => {
         // Populate local state when settings are loaded
@@ -161,7 +161,7 @@ const AdminSettings = () => {
                 </div>
 
                 {/* Social Media */}
-                <div className="admin-card p-6">
+                <div className="admin-.card p-6">
                     <h2 className="text-lg font-semibold text-[#2d3a29] mb-4">Social Media</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>

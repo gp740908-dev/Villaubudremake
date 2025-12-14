@@ -38,7 +38,7 @@ const AdminTestimonials = () => {
     useEffect(() => {
         fetchTestimonials();
         fetchVillas();
-    }, []);
+    }, [fetchTestimonials, fetchVillas]);
 
     useEffect(() => {
         if (selectedTestimonial) {
