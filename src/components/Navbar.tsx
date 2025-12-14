@@ -78,8 +78,8 @@ const Navbar = () => {
         className={cn(
           "fixed top-0 left-0 right-0 z-[1000] transition-all duration-300 overflow-visible",
           scrollY > scrollEnd
-            ? "h-[70px] bg-[rgba(241,243,224,0.95)] backdrop-blur-[15px] shadow-lg"
-            : "h-[100px] bg-transparent"
+            ? "h-[80px] bg-[rgba(241,243,224,0.95)] backdrop-blur-[15px] shadow-lg"
+            : "h-[120px] bg-transparent"
         )}
       >
         <nav className="h-full mx-auto px-8 max-w-7xl flex items-center justify-center relative">
