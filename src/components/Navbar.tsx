@@ -228,7 +228,12 @@ const Navbar = () => {
         initial={{ y: "-100%", opacity: 0 }}
         animate={isMenuOpen ? { y: 0, opacity: 1 } : { y: "-100%", opacity: 0 }}
         transition={{ duration: 0.4, ease: "easeInOut" }}
-        className="fixed top-[85px] left-1/2 -translate-x-1/2 w-[90%] max-w-[480px] bg-[rgba(241,243,224,0.95)] backdrop-blur-[15px] rounded-[24px] shadow-lg z-[999] overflow-hidden"
+        className={cn(
+          "fixed left-1/2 -translate-x-1/2 w-[90%] max-w-[480px] bg-[rgba(241,243,224,0.95)] backdrop-blur-[15px] rounded-[24px] shadow-lg z-[999] overflow-hidden transition-all duration-300",
+          isScrolled && shouldShow
+            ? "top-[100px]"
+            : "top-[92px]"
+        )}
       >
         {/* Menu Items */}
         <nav className="divide-y divide-[#F1F3E0]">
