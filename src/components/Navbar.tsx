@@ -228,42 +228,42 @@ const Navbar = () => {
         initial={{ y: "-100%", opacity: 0 }}
         animate={isMenuOpen ? { y: 0, opacity: 1 } : { y: "-100%", opacity: 0 }}
         transition={{ duration: 0.4, ease: "easeInOut" }}
-        className="fixed top-[85px] left-1/2 -translate-x-1/2 w-[90%] max-w-[480px] bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 z-[999] overflow-hidden"
+        className="fixed top-[85px] left-1/2 -translate-x-1/2 w-[90%] max-w-[480px] bg-[rgba(241,243,224,0.95)] backdrop-blur-[15px] rounded-[24px] shadow-lg z-[999] overflow-hidden"
       >
         {/* Menu Items */}
         <nav className="divide-y divide-[#F1F3E0]">
           <a
             href="/"
             onClick={() => setIsMenuOpen(false)}
-            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/10 transition-colors"
+            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/15 transition-colors"
           >
             <span className="text-lg">Home</span>
           </a>
           <a
             href="/villas"
             onClick={() => setIsMenuOpen(false)}
-            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/10 transition-colors"
+            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/15 transition-colors"
           >
             <span className="text-lg">Our Villas</span>
           </a>
           <a
             href="/gallery"
             onClick={() => setIsMenuOpen(false)}
-            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/10 transition-colors"
+            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/15 transition-colors"
           >
             <span className="text-lg">Gallery</span>
           </a>
           <a
             href="/about"
             onClick={() => setIsMenuOpen(false)}
-            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/10 transition-colors"
+            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/15 transition-colors"
           >
             <span className="text-lg">About Us</span>
           </a>
           <a
             href="/blog"
             onClick={() => setIsMenuOpen(false)}
-            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/10 transition-colors"
+            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/15 transition-colors"
           >
             <span className="text-lg">Blog</span>
           </a>
