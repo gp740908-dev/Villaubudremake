@@ -104,7 +104,11 @@ const Navbar = () => {
           {/* Center Logo/Text */}
           <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center h-full">
             <motion.div
-              style={{ opacity: textOpacity, scale: textScale }}
+              style={{
+                opacity: textOpacity,
+                scale: textScale,
+                color: scrollY > scrollEnd ? "#2d3a29" : "white"
+              }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
               className="absolute"
             >
@@ -112,9 +116,9 @@ const Navbar = () => {
                 className="text-4xl font-bold whitespace-nowrap"
                 style={{ fontFamily: "'Knewave', cursive" }}
               >
-                <span className="text-white">Stay</span>
+                <span>Stay</span>
                 <span className="text-[#A1BC98]">in</span>
-                <span className="text-white">UBUD</span>
+                <span>UBUD</span>
               </span>
             </motion.div>
             <motion.div
