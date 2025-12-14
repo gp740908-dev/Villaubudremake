@@ -102,7 +102,7 @@ const Navbar = () => {
           </div>
 
           {/* Center Logo/Text */}
-          <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center h-full">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <motion.div
               style={{
                 opacity: textOpacity,
@@ -110,7 +110,7 @@ const Navbar = () => {
                 color: scrollY > scrollEnd ? "#2d3a29" : "white"
               }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="absolute"
+              className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 top-1/2"
             >
               <span
                 className="text-4xl font-bold whitespace-nowrap"
@@ -128,7 +128,7 @@ const Navbar = () => {
                 height: scrollY > scrollEnd ? "50px" : "80px"
               }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="absolute flex items-center"
+              className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 top-1/2 flex items-center"
             >
               <img src={logoImage} alt="StayinUBUD" className="object-contain h-full" />
             </motion.div>
