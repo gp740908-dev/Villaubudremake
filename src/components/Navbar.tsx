@@ -125,7 +125,7 @@ const Navbar = () => {
               style={{
                 opacity: logoOpacity,
                 scale: logoScale,
-                height: scrollY > scrollEnd ? "50px" : "80px"
+                height: scrollY > scrollEnd ? "70px" : "100px"
               }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
               className="absolute flex items-center"
