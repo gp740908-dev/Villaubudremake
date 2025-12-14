@@ -128,19 +128,19 @@ const Navbar = () => {
 
           {/* Right Menu */}
           <div className="flex items-center gap-8">
-            <a href="/about" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
+            <a href="/about" className="text-[#778873] font-medium hover:text-[#A1BC98] transition-colors relative group">
               About Us
-              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
+              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
             </a>
 
-            <a href="/contact" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
+            <a href="/contact" className="text-[#778873] font-medium hover:text-[#A1BC98] transition-colors relative group">
               Contact
-              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
+              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
             </a>
 
-            <a href="/blog" className="text-[#2d3a29] font-medium hover:text-[#2d3a29] transition-colors relative group">
+            <a href="/blog" className="text-[#778873] font-medium hover:text-[#A1BC98] transition-colors relative group">
               Blog
-              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#2d3a29] group-hover:w-full transition-all duration-300" />
+              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
             </a>
           </div>
         </nav>
