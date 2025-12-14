@@ -102,7 +102,7 @@ const Navbar = () => {
           </div>
 
           {/* Center Logo/Text */}
-          <div className="flex items-center justify-center h-full">
+          <a href="/" className="flex items-center justify-center h-full cursor-pointer hover:opacity-80 transition-opacity">
             <motion.div
               style={{
                 opacity: textOpacity,
@@ -132,7 +132,7 @@ const Navbar = () => {
             >
               <img src={logoImage} alt="StayinUBUD" className="object-contain h-full" />
             </motion.div>
-          </div>
+          </a>
 
           {/* Right Menu */}
           <div className="flex items-center gap-8 absolute right-8">
