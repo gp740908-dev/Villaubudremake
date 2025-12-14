@@ -217,83 +217,57 @@ const Navbar = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[998]"
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[998]"
             onClick={() => setIsMenuOpen(false)}
           />
         )}
       </AnimatePresence>
 
-      {/* Mobile Menu Drawer */}
+      {/* Mobile Menu Dropdown - Floating from top */}
       <motion.div
-        initial={{ x: "100%" }}
-        animate={isMenuOpen ? { x: 0 } : { x: "100%" }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="fixed top-0 right-0 w-full h-screen max-w-xs bg-white z-[999] shadow-2xl"
+        initial={{ y: "-100%", opacity: 0 }}
+        animate={isMenuOpen ? { y: 0, opacity: 1 } : { y: "-100%", opacity: 0 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+        className="fixed top-[85px] left-1/2 -translate-x-1/2 w-[90%] max-w-[480px] bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 z-[999] overflow-hidden"
       >
-        {/* Drawer Header - Fixed at top */}
-        <div className="fixed top-0 right-0 w-full max-w-xs h-[100px] bg-white border-b border-[#F1F3E0] flex items-center justify-between px-6 z-[1000]">
-          {/* Logo + Text at top */}
-          <div className="flex items-center gap-3">
-            <img src={logoImage} alt="StayinUBUD" className="h-14" />
-            <span className="text-lg font-bold" style={{ fontFamily: "'Knewave', cursive" }}>
-              <span className="text-[#2d3a29]">Stay</span>
-              <span className="text-[#A1BC98]">in</span>
-              <span className="text-[#2d3a29]">UBUD</span>
-            </span>
-          </div>
-
-          {/* Close Button */}
-          <button
+        {/* Menu Items */}
+        <nav className="divide-y divide-[#F1F3E0]">
+          <a
+            href="/"
             onClick={() => setIsMenuOpen(false)}
-            className="p-2 hover:bg-[#F1F3E0] rounded-lg transition-colors"
-            aria-label="Close menu"
+            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/10 transition-colors"
           >
-            <X size={24} className="text-[#778873]" />
-          </button>
-        </div>
-
-        {/* Drawer Content - Scrollable below header */}
-        <div className="mt-[100px] h-[calc(100vh-100px)] overflow-y-auto px-0">
-          {/* Menu Items */}
-          <nav className="space-y-0">
-            <a
-              href="/"
-              onClick={() => setIsMenuOpen(false)}
-              className="flex items-center px-6 py-4 text-[#2d3a29] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
-            >
-              Home
-            </a>
-            <a
-              href="/villas"
-              onClick={() => setIsMenuOpen(false)}
-              className="flex items-center px-6 py-4 text-[#2d3a29] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
-            >
-              Our Villas
-            </a>
-            <a
-              href="/gallery"
-              onClick={() => setIsMenuOpen(false)}
-              className="flex items-center px-6 py-4 text-[#2d3a29] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
-            >
-              Gallery
-            </a>
-            <a
-              href="/about"
-              onClick={() => setIsMenuOpen(false)}
-              className="flex items-center px-6 py-4 text-[#2d3a29] font-medium border-b border-[#F1F3E0] hover:bg-[#F1F3E0] transition-colors"
-            >
-              About Us
-            </a>
-            <a
-              href="/blog"
-              onClick={() => setIsMenuOpen(false)}
-              className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#F1F3E0] transition-colors"
-            >
-              Blog
-            </a>
-          </nav>
-        </div>
-
+            <span className="text-lg">Home</span>
+          </a>
+          <a
+            href="/villas"
+            onClick={() => setIsMenuOpen(false)}
+            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/10 transition-colors"
+          >
+            <span className="text-lg">Our Villas</span>
+          </a>
+          <a
+            href="/gallery"
+            onClick={() => setIsMenuOpen(false)}
+            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/10 transition-colors"
+          >
+            <span className="text-lg">Gallery</span>
+          </a>
+          <a
+            href="/about"
+            onClick={() => setIsMenuOpen(false)}
+            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/10 transition-colors"
+          >
+            <span className="text-lg">About Us</span>
+          </a>
+          <a
+            href="/blog"
+            onClick={() => setIsMenuOpen(false)}
+            className="flex items-center px-6 py-4 text-[#2d3a29] font-medium hover:bg-[#A1BC98]/10 transition-colors"
+          >
+            <span className="text-lg">Blog</span>
+          </a>
+        </nav>
       </motion.div>
     </>
   );
