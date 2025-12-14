@@ -164,4 +164,4 @@ const FAQPage = () => {
     );
 };
 
-export default FAQPage;ぴ
+export default FAQPage;
