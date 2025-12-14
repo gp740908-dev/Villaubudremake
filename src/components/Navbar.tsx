@@ -132,19 +132,19 @@ const Navbar = () => {
 
           {/* Right Menu */}
           <div className="flex items-center gap-8">
-            <a href="/about" className="text-[#778873] font-medium hover:text-[#A1BC98] transition-colors relative group">
+            <a href="/about" className={cn("font-medium transition-colors relative group", scrollY > scrollEnd ? "text-white hover:text-[#A1BC98]" : "text-[#778873] hover:text-[#A1BC98]")}>
               About Us
-              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
+              <span className={cn("absolute bottom-[-4px] left-0 w-0 h-[2px] group-hover:w-full transition-all duration-300", scrollY > scrollEnd ? "bg-[#A1BC98]" : "bg-[#A1BC98]")} />
             </a>
 
-            <a href="/contact" className="text-[#778873] font-medium hover:text-[#A1BC98] transition-colors relative group">
+            <a href="/contact" className={cn("font-medium transition-colors relative group", scrollY > scrollEnd ? "text-white hover:text-[#A1BC98]" : "text-[#778873] hover:text-[#A1BC98]")}>
               Contact
-              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
+              <span className={cn("absolute bottom-[-4px] left-0 w-0 h-[2px] group-hover:w-full transition-all duration-300", scrollY > scrollEnd ? "bg-[#A1BC98]" : "bg-[#A1BC98]")} />
             </a>
 
-            <a href="/blog" className="text-[#778873] font-medium hover:text-[#A1BC98] transition-colors relative group">
+            <a href="/blog" className={cn("font-medium transition-colors relative group", scrollY > scrollEnd ? "text-white hover:text-[#A1BC98]" : "text-[#778873] hover:text-[#A1BC98]")}>
               Blog
-              <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
+              <span className={cn("absolute bottom-[-4px] left-0 w-0 h-[2px] group-hover:w-full transition-all duration-300", scrollY > scrollEnd ? "bg-[#A1BC98]" : "bg-[#A1BC98]")} />
             </a>
           </div>
         </nav>
