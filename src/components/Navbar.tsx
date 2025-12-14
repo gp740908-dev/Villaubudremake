@@ -126,7 +126,7 @@ const Navbar = () => {
               transition={{ duration: 0.5, ease: "easeInOut" }}
               className="absolute"
             >
-              <img src={logoImage} alt="StayinUBUD" className="h-[80px] object-contain" />
+              <img src={logoImage} alt="StayinUBUD" className={cn("object-contain", scrollY > scrollEnd ? "h-[50px]" : "h-[80px]")} />
             </motion.div>
           </div>
 
