@@ -15,6 +15,7 @@ import { useBlogStore } from '@/store/blogStore';
 import { useAuthStore } from '@/store/authStore';
 import RichTextEditor from '@/components/ui/RichTextEditor';
 import type { BlogPost } from '@/lib/database.types';
+import ImageUpload from '@/components/ui/ImageUpload';
 
 const AdminBlogEditor = () => {
     const { id } = useParams();
