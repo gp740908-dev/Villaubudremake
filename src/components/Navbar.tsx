@@ -237,7 +237,7 @@ const Navbar = () => {
         className={cn(
           "fixed left-0 right-0 mx-auto w-[90%] max-w-[480px] bg-[rgba(241,243,224,0.95)] backdrop-blur-[15px] rounded-[24px] shadow-lg z-[999] overflow-hidden transition-all duration-300",
           isScrolled && shouldShow
-            ? "top-[100px]"
+            ? "top-[110px]"
             : "top-[140px]"
         )}
       >
