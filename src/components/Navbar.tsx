@@ -205,14 +205,9 @@ const Navbar = () => {
               transition={{ duration: 0.4, ease: "easeInOut" }}
               className="absolute"
             >
-              <img src={logoImage} alt="StayinUBUD" className="h-[40px] object-contain" />
+              <img src={logoImage} alt="StayinUBUD" className="h-[50px] object-contain" />
             </motion.div>
           </div>
-
-          {/* Search Icon */}
-          <button className="p-2 hover:bg-black/10 rounded-lg transition-colors z-[1001]" aria-label="Search">
-            <Search size={24} className="text-[#778873]" />
-          </button>
         </nav>
       </header>
 
