@@ -82,9 +82,9 @@ const Navbar = () => {
             : "h-[100px] bg-transparent"
         )}
       >
-        <nav className="h-full mx-auto px-8 max-w-7xl flex items-center justify-between relative">
+        <nav className="h-full mx-auto px-8 max-w-7xl flex items-center justify-center relative">
           {/* Left Menu */}
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-8 absolute left-8">
             <a href="/" className={cn("font-medium transition-colors relative group", scrollY > scrollEnd ? "text-[#778873] hover:text-[#A1BC98]" : "text-white hover:text-[#A1BC98]")}>
               Home
               <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
@@ -102,7 +102,7 @@ const Navbar = () => {
           </div>
 
           {/* Center Logo/Text */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="flex items-center justify-center h-full">
             <motion.div
               style={{
                 opacity: textOpacity,
@@ -110,7 +110,7 @@ const Navbar = () => {
                 color: scrollY > scrollEnd ? "#2d3a29" : "white"
               }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 top-1/2"
+              className="absolute"
             >
               <span
                 className="text-4xl font-bold whitespace-nowrap"
@@ -128,14 +128,14 @@ const Navbar = () => {
                 height: scrollY > scrollEnd ? "50px" : "80px"
               }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 top-1/2 flex items-center"
+              className="absolute flex items-center"
             >
               <img src={logoImage} alt="StayinUBUD" className="object-contain h-full" />
             </motion.div>
           </div>
 
           {/* Right Menu */}
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-8 absolute right-8">
             <a href="/about" className={cn("font-medium transition-colors relative group", scrollY > scrollEnd ? "text-[#778873] hover:text-[#A1BC98]" : "text-white hover:text-[#A1BC98]")}>
               About Us
               <span className="absolute bottom-[-4px] left-0 w-0 h-[2px] bg-[#A1BC98] group-hover:w-full transition-all duration-300" />
