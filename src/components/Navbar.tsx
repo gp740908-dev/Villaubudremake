@@ -122,11 +122,15 @@ const Navbar = () => {
               </span>
             </motion.div>
             <motion.div
-              style={{ opacity: logoOpacity, scale: logoScale }}
+              style={{
+                opacity: logoOpacity,
+                scale: logoScale,
+                height: scrollY > scrollEnd ? "50px" : "80px"
+              }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="absolute"
+              className="absolute flex items-center"
             >
-              <img src={logoImage} alt="StayinUBUD" className={cn("object-contain", scrollY > scrollEnd ? "h-[50px]" : "h-[80px]")} />
+              <img src={logoImage} alt="StayinUBUD" className="object-contain h-full" />
             </motion.div>
           </div>
 
